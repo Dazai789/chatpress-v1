@@ -69,9 +69,29 @@ GET    /p/{slug}
 
 详细设计文档：
 
-- [产品定义](./PRODUCT.md)
-- [数据模型](./DATA_MODEL.md)
-- [API 设计](./API.md)
+- [产品定义](./docs/design/PRODUCT.md)
+- [数据模型](./docs/design/DATA_MODEL.md)
+- [API 设计](./docs/design/API.md)
+
+## 项目结构
+
+```text
+.
+├── README.md
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+├── src/
+│   ├── main/
+│   └── test/
+└── docs/
+    ├── design/
+    │   ├── PRODUCT.md
+    │   ├── DATA_MODEL.md
+    │   └── API.md
+    └── source/
+        └── 新型个人博客想法.pdf
+```
 
 ## 技术栈规划
 
