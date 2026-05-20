@@ -1,4 +1,4 @@
-# chatpress_V1 数据模型
+# chatpress-v1 数据模型
 
 ## 1. 概述
 

@@ -1,22 +1,18 @@
-# chatpress_V1 产品定义
+# chatpress-v1 产品定义
 
 ## 1. 产品概述
 
-chatpress_V1 是一个面向 AI 内容沉淀场景的轻量级知识页面发布系统。
+chatpress-v1 是一个面向 AI 内容沉淀场景的轻量级知识页面发布系统。
 
 系统允许用户将 AI 对话整理稿或 Markdown 笔记保存为结构化内容，并发布为可访问、可分享的网页。第一版聚焦最小可用发布链路：内容输入、持久化、Markdown 渲染和公开页面访问。
 
 ## 2. 产品定位
 
-chatpress_V1 面向介于 AI 聊天工具、笔记工具、博客系统和静态站点生成器之间的轻量发布场景。
+chatpress-v1 面向介于 AI 聊天工具、笔记工具、博客系统和静态站点生成器之间的轻量发布场景。
 
 AI 聊天工具适合生成内容，但不适合长期组织和发布内容。传统笔记工具适合记录，但公开分享能力有限。博客系统和静态站点生成器具备发布能力，但对零散知识笔记和 AI 对话整理稿来说流程偏重。
 
-chatpress_V1 的定位是：
-
-> Turn AI chats and Markdown notes into shareable knowledge pages.
-
-中文定位：
+chatpress-v1 的定位是：
 
 > 把 AI 对话和 Markdown 笔记变成可分享的知识页面。
 
@@ -35,7 +31,7 @@ chatpress_V1 的定位是：
 
 用户在 AI 工具、本地 Markdown 文件或个人笔记中已经积累了有价值的内容，但这些内容通常缺少稳定的保存结构和分享入口。
 
-chatpress_V1 的核心场景是：
+chatpress-v1 的核心场景是：
 
 ```text
 用户整理一段 AI 对话或 Markdown 笔记
@@ -132,7 +128,7 @@ MVP 的目标是验证完整的内容发布链路：
 
 ## 10. 产品原则
 
-chatpress_V1 第一版遵循以下原则：
+chatpress-v1 第一版遵循以下原则：
 
 - 保持功能边界清晰。
 - 优先打通完整发布链路。
