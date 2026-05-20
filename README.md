@@ -77,15 +77,15 @@ GET    /p/{slug}
 
 后端计划采用：
 
-- Java
-- Spring Boot
+- Java 21
+- Spring Boot 3.5.14
 - Maven
-- H2 / MySQL
-- Spring Data JPA 或 MyBatis
+- H2
+- Spring Data JPA
 - Markdown 渲染库
 
 技术选型会围绕后端 CRUD、数据持久化和内容渲染这三个核心目标逐步推进。
 
 ## 项目状态
 
-当前项目处于早期设计阶段，已完成产品边界、数据模型和 API 草案。下一阶段将创建 Spring Boot 项目骨架，并实现 Artifact 的基础 CRUD 流程。
+当前项目处于早期实现阶段，已完成产品边界、数据模型、API 草案和 Spring Boot 项目骨架。下一阶段将实现 Artifact 的基础 CRUD 流程。
