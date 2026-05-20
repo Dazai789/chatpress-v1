@@ -1,75 +1,62 @@
 # ChatPress
 
-ChatPress 是一个用于整理 AI 对话和 Markdown 笔记，并发布为知识页面的轻量级系统。
+ChatPress 是一个面向 AI 内容沉淀场景的轻量级知识页面发布系统。项目支持将 AI 对话整理稿或 Markdown 笔记保存为结构化内容，并发布为可访问、可分享的网页。
 
-它的目标不是做一个完整博客平台，也不是做复杂的 AI 知识库，而是先解决一个很具体的问题：
+## 背景
+
+在日常学习、技术调研和项目开发中，大量有价值的信息已经产生于 ChatGPT、Claude、Gemini、Cursor 等 AI 工具的对话过程。相比传统笔记，这类内容通常具有以下特点：
+
+- 生成速度快，但分散在不同聊天窗口或本地文件中。
+- 内容有复用价值，但缺少稳定的访问入口。
+- 适合整理成知识页面，而不一定适合写成传统博客文章。
+- 常以 Markdown 形式保存，具备较低的发布转换成本。
+
+ChatPress 的目标是提供一个简洁的发布流程，把这些内容从临时记录转化为可维护的知识页面。
+
+## 核心流程
 
 ```text
-把有价值的 AI 对话或 Markdown 笔记
-整理成可保存、可访问、可分享的网页
+输入 AI 对话整理稿或 Markdown 笔记
+-> 保存原始内容
+-> 渲染为 HTML
+-> 生成公开访问页面
 ```
 
-## 项目定位
+## MVP 范围
 
-很多学习总结、技术记录、项目思路现在都来自 ChatGPT、Claude、Gemini、Cursor 等 AI 工具。但这些内容通常散落在聊天记录、本地文件或临时笔记里，不方便长期保存和分享。
+当前版本聚焦单一发布链路，计划实现：
 
-ChatPress 希望提供一个更简单的发布流程：
+- Artifact 创建、编辑、删除、查询
+- Markdown 内容保存
+- Markdown 到 HTML 的渲染
+- 基于 slug 的公开页面访问
+- 后台 JSON API
 
-```text
-粘贴 AI 对话整理内容或 Markdown 笔记
--> 保存
--> 渲染成 HTML
--> 生成一个公开页面
-```
+第一版不包含自动 AI 对话导入、账号权限、语义搜索、知识图谱、文件上传、插件系统等扩展能力。这些功能会在基础发布流程稳定后再评估。
 
-## MVP 功能
+## 数据模型
 
-第一版只做最小可用功能：
+MVP 使用一个核心实体：`Artifact`。
 
-- 创建笔记
-- 编辑笔记
-- 删除笔记
-- 查看笔记列表
-- 查看笔记详情
-- 将 Markdown 渲染为 HTML
-- 通过 `/p/{slug}` 访问公开页面
+`Artifact` 表示一篇可发布的知识页面，包含标题、slug、原始内容、渲染结果、发布状态和时间信息。
 
-## 暂不实现
+主要字段：
 
-为了控制项目范围，第一版暂不实现：
+| 字段 | 说明 |
+|---|---|
+| `id` | 内部主键 |
+| `title` | 页面标题 |
+| `slug` | 公开 URL 标识 |
+| `sourceFormat` | 原始内容格式，MVP 固定为 `markdown` |
+| `sourceContent` | 用户输入的原始内容 |
+| `renderedHtml` | 渲染后的 HTML |
+| `status` | 发布状态 |
+| `createdAt` | 创建时间 |
+| `updatedAt` | 更新时间 |
 
-- 自动读取 ChatGPT、Claude、Gemini、Cursor 聊天记录
-- LLM 集成
-- MCP server
-- DOCX / PDF 解析
-- 语义搜索
-- 知识图谱
-- 用户账号和权限系统
-- Redis
-- 插件市场
-- 多用户协作
+## API 设计
 
-第一版会先支持用户手动粘贴已经整理好的 AI 对话内容或 Markdown 内容。
-
-## 核心数据对象
-
-第一版只有一个核心对象：`Artifact`。
-
-一个 `Artifact` 表示一篇已发布的知识页面，主要字段包括：
-
-- `id`
-- `title`
-- `slug`
-- `sourceFormat`
-- `sourceContent`
-- `renderedHtml`
-- `status`
-- `createdAt`
-- `updatedAt`
-
-## API 草案
-
-MVP API 计划如下：
+MVP API 草案：
 
 ```text
 POST   /api/artifacts
@@ -80,31 +67,25 @@ DELETE /api/artifacts/{id}
 GET    /p/{slug}
 ```
 
-详细说明见：
+详细设计文档：
 
 - [产品定义](./PRODUCT.md)
 - [数据模型](./DATA_MODEL.md)
 - [API 设计](./API.md)
 
-## 当前状态
+## 技术栈规划
 
-项目目前处于规划和设计阶段，已经完成：
-
-- 产品边界定义
-- MVP 数据模型设计
-- MVP API 草案
-
-下一步会开始创建 Spring Boot 项目骨架，并逐步实现后端 CRUD 流程。
-
-## 技术栈计划
-
-初步计划：
+后端计划采用：
 
 - Java
 - Spring Boot
 - Maven
-- H2 或 MySQL
+- H2 / MySQL
 - Spring Data JPA 或 MyBatis
 - Markdown 渲染库
 
-具体技术选型会在实现过程中逐步确定。
+技术选型会围绕后端 CRUD、数据持久化和内容渲染这三个核心目标逐步推进。
+
+## 项目状态
+
+当前项目处于早期设计阶段，已完成产品边界、数据模型和 API 草案。下一阶段将创建 Spring Boot 项目骨架，并实现 Artifact 的基础 CRUD 流程。
