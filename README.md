@@ -69,9 +69,9 @@ GET    /p/{slug}
 
 详细设计文档：
 
-- [产品定义](./docs/design/PRODUCT.md)
-- [数据模型](./docs/design/DATA_MODEL.md)
-- [API 设计](./docs/design/API.md)
+- [产品定义](docs/PRODUCT.md)
+- [数据模型](docs/DATA_MODEL.md)
+- [API 设计](docs/API.md)
 
 ## 项目结构
 
@@ -85,12 +85,9 @@ GET    /p/{slug}
 │   ├── main/
 │   └── test/
 └── docs/
-    ├── design/
-    │   ├── PRODUCT.md
-    │   ├── DATA_MODEL.md
-    │   └── API.md
-    └── source/
-        └── 新型个人博客想法.pdf
+    ├── PRODUCT.md
+    ├── DATA_MODEL.md
+    └── API.md
 ```
 
 ## 技术栈规划
