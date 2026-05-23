@@ -103,4 +103,4 @@ GET    /p/{slug}
 
 ## 项目状态
 
-当前项目处于早期实现阶段，已完成产品边界、数据模型、API 草案和 Spring Boot 项目骨架。下一阶段将实现 Artifact 的基础 CRUD 流程。
+当前项目处于早期实现阶段，已完成产品边界、数据模型、API 草案、Spring Boot 项目骨架、Artifact 基础 CRUD、slug 唯一性校验和基于 slug 的公开页面访问。下一阶段将接入 Markdown 渲染。

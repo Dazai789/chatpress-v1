@@ -45,6 +45,7 @@ POST /api/artifacts
 ```json
 {
   "title": "My Java Learning Notes",
+  "slug": "my-java-learning-notes",
   "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly."
 }
 ```
@@ -52,10 +53,10 @@ POST /api/artifacts
 ### 说明
 
 - `title` 必填。
+- `slug` 必填，且应该唯一。
 - `sourceContent` 必填。
-- 后端应该生成 `slug`。
 - 后端应该把 `sourceFormat` 设置为 `markdown`。
-- 后端应该把 `sourceContent` 渲染成 `renderedHtml`。
+- 当前版本暂时把 `renderedHtml` 设置为 `sourceContent`，后续接入 Markdown 渲染后再生成 HTML。
 - 后端应该把初始状态设置为 `published`。
 
 ### 响应体
@@ -67,7 +68,7 @@ POST /api/artifacts
   "slug": "my-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
-  "renderedHtml": "<h1>My Java Learning Notes</h1>\n<p>Spring Boot helps us build web applications quickly.</p>",
+  "renderedHtml": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:30:00"
@@ -80,7 +81,7 @@ POST /api/artifacts
 400 Bad Request
 ```
 
-当 `title` 或 `sourceContent` 为空时返回。
+当 `title`、`slug` 或 `sourceContent` 为空时返回。
 
 ## 4. 列出 Artifacts
 
@@ -108,7 +109,7 @@ GET /api/artifacts
 
 ### 说明
 
-列表响应不需要包含完整的 `sourceContent` 或 `renderedHtml`。
+当前实现直接返回完整 artifact 对象。后续如果列表数据变大，可以再拆出专用列表响应，省略完整的 `sourceContent` 和 `renderedHtml`。
 
 ## 5. 获取 Artifact 详情
 
@@ -127,7 +128,7 @@ GET /api/artifacts/{id}
   "slug": "my-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
-  "renderedHtml": "<h1>My Java Learning Notes</h1>\n<p>Spring Boot helps us build web applications quickly.</p>",
+  "renderedHtml": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:30:00"
@@ -155,6 +156,7 @@ PUT /api/artifacts/{id}
 ```json
 {
   "title": "Updated Java Learning Notes",
+  "slug": "updated-java-learning-notes",
   "sourceContent": "# Updated Java Learning Notes\n\nSpring Boot is useful for backend projects."
 }
 ```
@@ -162,9 +164,10 @@ PUT /api/artifacts/{id}
 ### 说明
 
 - `title` 必填。
+- `slug` 必填，且应该唯一。
 - `sourceContent` 必填。
-- 如果标题变化，后端应该重新生成 `slug`。
-- 如果 `sourceContent` 变化，后端应该重新生成 `renderedHtml`。
+- 当前版本由客户端传入新的 `slug`。
+- 当前版本暂时把 `renderedHtml` 更新为 `sourceContent`，后续接入 Markdown 渲染后再重新生成 HTML。
 - 后端应该更新 `updatedAt`。
 
 ### 响应体
@@ -176,7 +179,7 @@ PUT /api/artifacts/{id}
   "slug": "updated-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# Updated Java Learning Notes\n\nSpring Boot is useful for backend projects.",
-  "renderedHtml": "<h1>Updated Java Learning Notes</h1>\n<p>Spring Boot is useful for backend projects.</p>",
+  "renderedHtml": "# Updated Java Learning Notes\n\nSpring Boot is useful for backend projects.",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:45:00"
@@ -189,7 +192,7 @@ PUT /api/artifacts/{id}
 400 Bad Request
 ```
 
-当 `title` 或 `sourceContent` 为空时返回。
+当 `title`、`slug` 或 `sourceContent` 为空时返回。
 
 ```text
 404 Not Found
@@ -235,24 +238,7 @@ GET /p/my-java-learning-notes
 
 ### 响应
 
-响应应该是一个 HTML 页面。
-
-MVP 阶段页面可以非常简单：
-
-```html
-<!doctype html>
-<html>
-  <head>
-    <title>My Java Learning Notes</title>
-  </head>
-  <body>
-    <main>
-      <h1>My Java Learning Notes</h1>
-      <p>Spring Boot helps us build web applications quickly.</p>
-    </main>
-  </body>
-</html>
-```
+当前版本直接返回 artifact 的 `renderedHtml` 字段，并使用 `text/html` 响应类型。因为 Markdown 渲染库还未接入，当前 `renderedHtml` 暂时等于 `sourceContent`。
 
 ### 可能错误
 
