@@ -1,13 +1,18 @@
 package com.chatpress.v1.artifact;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,18 +25,63 @@ class ArtifactControllerTest {
 
     @Test
     void createArtifact() throws Exception {
-        mockMvc.perform(post("/api/artifacts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "title": "Java Notes",
-                                  "slug": "java-notes",
-                                  "sourceContent": "# Java Notes"
-                                }
-                                """))
+        createArtifact("Java Notes", "java-notes", "# Java Notes")
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Java Notes"))
                 .andExpect(jsonPath("$.slug").value("java-notes"))
                 .andExpect(jsonPath("$.renderedHtml").value("<h1>Java Notes</h1>\n"));
+    }
+
+    @Test
+    void rejectDuplicateSlug() throws Exception {
+        createArtifact("First Note", "duplicate-slug", "# First Note")
+                .andExpect(status().isCreated());
+
+        createArtifact("Second Note", "duplicate-slug", "# Second Note")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Artifact slug already exists: duplicate-slug"));
+    }
+
+    @Test
+    void getArtifactById() throws Exception {
+        MvcResult result = createArtifact("Backend Notes", "backend-notes", "# Backend Notes")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(get("/api/artifacts/{id}", artifactId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(artifactId))
+                .andExpect(jsonPath("$.title").value("Backend Notes"))
+                .andExpect(jsonPath("$.slug").value("backend-notes"))
+                .andExpect(jsonPath("$.renderedHtml").value("<h1>Backend Notes</h1>\n"));
+    }
+
+    @Test
+    void getPublicPageBySlug() throws Exception {
+        createArtifact("Public Notes", "public-notes", "# Public Notes")
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/p/public-notes"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string("<h1>Public Notes</h1>\n"));
+    }
+
+    private ResultActions createArtifact(
+            String title,
+            String slug,
+            String sourceContent
+    ) throws Exception {
+        return mockMvc.perform(post("/api/artifacts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "title": "%s",
+                          "slug": "%s",
+                          "sourceContent": "%s"
+                        }
+                        """.formatted(title, slug, sourceContent)));
     }
 }
