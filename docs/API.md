@@ -56,7 +56,7 @@ POST /api/artifacts
 - `slug` 必填，且应该唯一。
 - `sourceContent` 必填。
 - 后端应该把 `sourceFormat` 设置为 `markdown`。
-- 当前版本暂时把 `renderedHtml` 设置为 `sourceContent`，后续接入 Markdown 渲染后再生成 HTML。
+- 后端会把 `sourceContent` 渲染成 `renderedHtml`。
 - 后端应该把初始状态设置为 `published`。
 
 ### 响应体
@@ -68,7 +68,7 @@ POST /api/artifacts
   "slug": "my-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
-  "renderedHtml": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
+  "renderedHtml": "<h1>My Java Learning Notes</h1>\n<p>Spring Boot helps us build web applications quickly.</p>\n",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:30:00"
@@ -128,7 +128,7 @@ GET /api/artifacts/{id}
   "slug": "my-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
-  "renderedHtml": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
+  "renderedHtml": "<h1>My Java Learning Notes</h1>\n<p>Spring Boot helps us build web applications quickly.</p>\n",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:30:00"
@@ -167,7 +167,7 @@ PUT /api/artifacts/{id}
 - `slug` 必填，且应该唯一。
 - `sourceContent` 必填。
 - 当前版本由客户端传入新的 `slug`。
-- 当前版本暂时把 `renderedHtml` 更新为 `sourceContent`，后续接入 Markdown 渲染后再重新生成 HTML。
+- 如果 `sourceContent` 变化，后端会重新生成 `renderedHtml`。
 - 后端应该更新 `updatedAt`。
 
 ### 响应体
@@ -179,7 +179,7 @@ PUT /api/artifacts/{id}
   "slug": "updated-java-learning-notes",
   "sourceFormat": "markdown",
   "sourceContent": "# Updated Java Learning Notes\n\nSpring Boot is useful for backend projects.",
-  "renderedHtml": "# Updated Java Learning Notes\n\nSpring Boot is useful for backend projects.",
+  "renderedHtml": "<h1>Updated Java Learning Notes</h1>\n<p>Spring Boot is useful for backend projects.</p>\n",
   "status": "published",
   "createdAt": "2026-05-20T19:30:00",
   "updatedAt": "2026-05-20T19:45:00"
@@ -238,7 +238,7 @@ GET /p/my-java-learning-notes
 
 ### 响应
 
-当前版本直接返回 artifact 的 `renderedHtml` 字段，并使用 `text/html` 响应类型。因为 Markdown 渲染库还未接入，当前 `renderedHtml` 暂时等于 `sourceContent`。
+当前版本直接返回 artifact 的 `renderedHtml` 字段，并使用 `text/html` 响应类型。
 
 ### 可能错误
 

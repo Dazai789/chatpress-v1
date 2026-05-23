@@ -97,10 +97,10 @@ GET    /p/{slug}
 - Maven
 - H2
 - Spring Data JPA
-- Markdown 渲染库
+- CommonMark Markdown 渲染库
 
 技术选型会围绕后端 CRUD、数据持久化和内容渲染这三个核心目标逐步推进。
 
 ## 项目状态
 
-当前项目处于早期实现阶段，已完成产品边界、数据模型、API 草案、Spring Boot 项目骨架、Artifact 基础 CRUD、slug 唯一性校验和基于 slug 的公开页面访问。下一阶段将接入 Markdown 渲染。
+当前项目处于早期实现阶段，已完成产品边界、数据模型、API 草案、Spring Boot 项目骨架、Artifact 基础 CRUD、slug 唯一性校验、Markdown 渲染和基于 slug 的公开页面访问。下一阶段将整理 API 响应结构和错误响应格式。

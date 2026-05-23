@@ -9,15 +9,17 @@ import java.util.Optional;
 public class ArtifactService {
 
     private final ArtifactRepository artifactRepository;
+    private final MarkdownRenderer markdownRenderer;
 
-    public ArtifactService(ArtifactRepository artifactRepository) {
+    public ArtifactService(ArtifactRepository artifactRepository, MarkdownRenderer markdownRenderer) {
         this.artifactRepository = artifactRepository;
+        this.markdownRenderer = markdownRenderer;
     }
 
     public Artifact createArtifact(String title, String slug, String sourceContent) {
         ensureSlugAvailableForCreate(slug);
 
-        Artifact artifact = new Artifact(title, slug, sourceContent, sourceContent);
+        Artifact artifact = new Artifact(title, slug, sourceContent, markdownRenderer.render(sourceContent));
         artifact.setStatus("published");
         return artifactRepository.save(artifact);
     }
@@ -41,7 +43,7 @@ public class ArtifactService {
                     artifact.setTitle(title);
                     artifact.setSlug(slug);
                     artifact.setSourceContent(sourceContent);
-                    artifact.setRenderedHtml(sourceContent);
+                    artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
                     return artifactRepository.save(artifact);
                 });
     }
