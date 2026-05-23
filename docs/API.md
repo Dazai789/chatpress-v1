@@ -83,6 +83,26 @@ POST /api/artifacts
 
 当 `title`、`slug` 或 `sourceContent` 为空时返回。
 
+```json
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Request validation failed"
+}
+```
+
+```text
+409 Conflict
+```
+
+当 `slug` 已存在时返回。
+
+```json
+{
+  "code": "DUPLICATE_SLUG",
+  "message": "Artifact slug already exists: my-java-learning-notes"
+}
+```
+
 ## 4. 列出 Artifacts
 
 ```text
@@ -100,6 +120,8 @@ GET /api/artifacts
     "title": "My Java Learning Notes",
     "slug": "my-java-learning-notes",
     "sourceFormat": "markdown",
+    "sourceContent": "# My Java Learning Notes\n\nSpring Boot helps us build web applications quickly.",
+    "renderedHtml": "<h1>My Java Learning Notes</h1>\n<p>Spring Boot helps us build web applications quickly.</p>\n",
     "status": "published",
     "createdAt": "2026-05-20T19:30:00",
     "updatedAt": "2026-05-20T19:30:00"
@@ -109,7 +131,7 @@ GET /api/artifacts
 
 ### 说明
 
-当前实现直接返回完整 artifact 对象。后续如果列表数据变大，可以再拆出专用列表响应，省略完整的 `sourceContent` 和 `renderedHtml`。
+当前实现使用统一的 `ArtifactResponse`，列表接口也会返回 `sourceContent` 和 `renderedHtml`。后续如果列表数据变大，可以再拆出专用列表响应，省略完整内容字段。
 
 ## 5. 获取 Artifact 详情
 
@@ -142,6 +164,13 @@ GET /api/artifacts/{id}
 ```
 
 当 artifact 不存在时返回。
+
+```json
+{
+  "code": "ARTIFACT_NOT_FOUND",
+  "message": "Artifact not found: 1"
+}
+```
 
 ## 6. 更新 Artifact
 
@@ -194,11 +223,38 @@ PUT /api/artifacts/{id}
 
 当 `title`、`slug` 或 `sourceContent` 为空时返回。
 
+```json
+{
+  "code": "VALIDATION_FAILED",
+  "message": "Request validation failed"
+}
+```
+
 ```text
 404 Not Found
 ```
 
 当 artifact 不存在时返回。
+
+```json
+{
+  "code": "ARTIFACT_NOT_FOUND",
+  "message": "Artifact not found: 1"
+}
+```
+
+```text
+409 Conflict
+```
+
+当新的 `slug` 已被其他 artifact 使用时返回。
+
+```json
+{
+  "code": "DUPLICATE_SLUG",
+  "message": "Artifact slug already exists: updated-java-learning-notes"
+}
+```
 
 ## 7. 删除 Artifact
 
@@ -221,6 +277,13 @@ DELETE /api/artifacts/{id}
 ```
 
 当 artifact 不存在时返回。
+
+```json
+{
+  "code": "ARTIFACT_NOT_FOUND",
+  "message": "Artifact not found: 1"
+}
+```
 
 ## 8. 公开页面
 
@@ -247,6 +310,8 @@ GET /p/my-java-learning-notes
 ```
 
 当 artifact 不存在时返回。
+
+当前公开页面接口返回 HTML，不返回 JSON 错误体。
 
 ## 9. 不属于 MVP 的 API 功能
 
