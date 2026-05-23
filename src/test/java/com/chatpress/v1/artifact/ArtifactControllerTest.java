@@ -39,7 +39,8 @@ class ArtifactControllerTest {
 
         createArtifact("Second Note", "duplicate-slug", "# Second Note")
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Artifact slug already exists: duplicate-slug"));
+                .andExpect(jsonPath("$.code").value("DUPLICATE_SLUG"))
+                .andExpect(jsonPath("$.message").value("Artifact slug already exists: duplicate-slug"));
     }
 
     @Test
