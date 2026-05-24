@@ -1,5 +1,6 @@
 package com.chatpress.v1.artifact;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,6 +25,9 @@ class ArtifactControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void createArtifact() throws Exception {
@@ -95,12 +101,10 @@ class ArtifactControllerTest {
     ) throws Exception {
         return mockMvc.perform(post("/api/artifacts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "title": "%s",
-                          "slug": "%s",
-                          "sourceContent": "%s"
-                        }
-                        """.formatted(title, slug, sourceContent)));
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "title", title,
+                        "slug", slug,
+                        "sourceContent", sourceContent
+                ))));
     }
 }
