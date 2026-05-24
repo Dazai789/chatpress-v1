@@ -21,7 +21,7 @@ public class ArtifactService {
         ensureSlugAvailableForCreate(slug);
 
         Artifact artifact = new Artifact(title, slug, sourceContent, markdownRenderer.render(sourceContent));
-        artifact.setStatus(ArtifactStatus.PUBLISHED);
+        artifact.setStatus(Artifact.Status.PUBLISHED);
         return artifactRepository.save(artifact);
     }
 

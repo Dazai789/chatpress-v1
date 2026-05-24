@@ -36,7 +36,7 @@ artifact
 | `source_format` | String / VARCHAR | 是 | 原始内容格式。MVP 值为 `markdown`。 |
 | `source_content` | Text / CLOB | 是 | 用户提供的原始内容，可以是 Markdown 笔记或 AI 对话整理内容。 |
 | `rendered_html` | Text / CLOB | 是 | 从 `source_content` 生成的 HTML。 |
-| `status` | Enum / VARCHAR | 是 | 发布状态。代码中使用 `ArtifactStatus`，数据库保存枚举名。 |
+| `status` | Enum / VARCHAR | 是 | 发布状态。代码中使用 `Artifact.Status`，数据库保存枚举名。 |
 | `created_at` | Timestamp | 是 | artifact 创建时间。 |
 | `updated_at` | Timestamp | 是 | artifact 最后更新时间。 |
 

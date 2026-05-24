@@ -18,6 +18,11 @@ import jakarta.persistence.Table;
 @Table(name = "artifact")
 public class Artifact {
 
+    public enum Status {
+        DRAFT,
+        PUBLISHED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,7 +46,7 @@ public class Artifact {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private ArtifactStatus status = ArtifactStatus.DRAFT;
+    private Status status = Status.DRAFT;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -115,11 +120,11 @@ public class Artifact {
         this.renderedHtml = renderedHtml;
     }
 
-    public ArtifactStatus getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(ArtifactStatus status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
