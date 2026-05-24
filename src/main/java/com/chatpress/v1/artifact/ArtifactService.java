@@ -1,5 +1,6 @@
 package com.chatpress.v1.artifact;
 
+import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.v1.artifact.exception.DuplicateSlugException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -30,33 +31,28 @@ public class ArtifactService {
         return artifactRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
-    public Optional<Artifact> getArtifact(Long id) {
-        return artifactRepository.findById(id);
+    public Artifact getArtifactOrThrow(Long id) {
+        return artifactRepository.findById(id)
+                .orElseThrow(() -> new ArtifactNotFoundException(id));
     }
 
     public Optional<Artifact> getArtifactBySlug(String slug) {
         return artifactRepository.findBySlug(slug);
     }
 
-    public Optional<Artifact> updateArtifact(Long id, String title, String slug, String sourceContent) {
-        return artifactRepository.findById(id)
-                .map(artifact -> {
-                    ensureSlugAvailableForUpdate(slug, artifact.getId());
-                    artifact.setTitle(title);
-                    artifact.setSlug(slug);
-                    artifact.setSourceContent(sourceContent);
-                    artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
-                    return artifactRepository.save(artifact);
-                });
+    public Artifact updateArtifactOrThrow(Long id, String title, String slug, String sourceContent) {
+        Artifact artifact = getArtifactOrThrow(id);
+        ensureSlugAvailableForUpdate(slug, artifact.getId());
+        artifact.setTitle(title);
+        artifact.setSlug(slug);
+        artifact.setSourceContent(sourceContent);
+        artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
+        return artifactRepository.save(artifact);
     }
 
-    public boolean deleteArtifact(Long id) {
-        if (!artifactRepository.existsById(id)) {
-            return false;
-        }
-
+    public void deleteArtifactOrThrow(Long id) {
+        getArtifactOrThrow(id);
         artifactRepository.deleteById(id);
-        return true;
     }
 
     private void ensureSlugAvailableForCreate(String slug) {

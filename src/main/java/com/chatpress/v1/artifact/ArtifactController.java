@@ -3,7 +3,6 @@ package com.chatpress.v1.artifact;
 import com.chatpress.v1.artifact.dto.ArtifactRequest;
 import com.chatpress.v1.artifact.dto.ArtifactResponse;
 import com.chatpress.v1.artifact.dto.ArtifactSummaryResponse;
-import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +48,7 @@ public class ArtifactController {
 
     @GetMapping("/{id}")
     public ArtifactResponse getArtifact(@PathVariable Long id) {
-        return artifactService.getArtifact(id)
-                .map(ArtifactResponse::from)
-                .orElseThrow(() -> new ArtifactNotFoundException(id));
+        return ArtifactResponse.from(artifactService.getArtifactOrThrow(id));
     }
 
     @PutMapping("/{id}")
@@ -59,22 +56,18 @@ public class ArtifactController {
             @PathVariable Long id,
             @Valid @RequestBody ArtifactRequest request
     ) {
-        return artifactService.updateArtifact(
-                        id,
-                        request.title(),
-                        request.slug(),
-                        request.sourceContent()
-                )
-                .map(ArtifactResponse::from)
-                .orElseThrow(() -> new ArtifactNotFoundException(id));
+        Artifact artifact = artifactService.updateArtifactOrThrow(
+                id,
+                request.title(),
+                request.slug(),
+                request.sourceContent()
+        );
+        return ArtifactResponse.from(artifact);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArtifact(@PathVariable Long id) {
-        if (!artifactService.deleteArtifact(id)) {
-            throw new ArtifactNotFoundException(id);
-        }
-
+        artifactService.deleteArtifactOrThrow(id);
         return ResponseEntity.noContent().build();
     }
 }
