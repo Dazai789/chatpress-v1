@@ -139,14 +139,14 @@ class ArtifactControllerTest {
 
     @Test
     void getPublicPageBySlug() throws Exception {
-        createArtifact("Public Notes", "public-notes", "# Public Notes")
+        createArtifact("Public <Notes> & Tips", "public-notes", "# Public Notes")
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get("/p/public-notes"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<!doctype html>")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("<title>Public Notes</title>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<title>Public &lt;Notes&gt; &amp; Tips</title>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<h1>Public Notes</h1>")));
     }
 

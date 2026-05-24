@@ -20,6 +20,15 @@ public class PublicPageRenderer {
                     </main>
                 </body>
                 </html>
-                """.formatted(artifact.getTitle(), artifact.getRenderedHtml());
+                """.formatted(escapeHtml(artifact.getTitle()), artifact.getRenderedHtml());
+    }
+
+    private String escapeHtml(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }
