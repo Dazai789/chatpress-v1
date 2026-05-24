@@ -1,6 +1,7 @@
 package com.chatpress.v1.artifact;
 
 import com.chatpress.v1.artifact.exception.DuplicateSlugException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class ArtifactService {
     }
 
     public List<Artifact> listArtifacts() {
-        return artifactRepository.findAll();
+        return artifactRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     public Optional<Artifact> getArtifact(Long id) {
