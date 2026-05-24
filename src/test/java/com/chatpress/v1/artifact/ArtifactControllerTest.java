@@ -147,6 +147,7 @@ class ArtifactControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<!doctype html>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<title>Public &lt;Notes&gt; &amp; Tips</title>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("max-width: 760px;")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<h1>Public Notes</h1>")));
     }
 
