@@ -19,10 +19,11 @@ public class ArtifactService {
         this.markdownRenderer = markdownRenderer;
     }
 
-    public Artifact createArtifact(String title, String slug, String sourceContent) {
+    public Artifact createArtifact(String title, String slug, Artifact.SourceType sourceType, String sourceContent) {
         ensureSlugAvailableForCreate(slug);
 
         Artifact artifact = new Artifact(title, slug, sourceContent, markdownRenderer.render(sourceContent));
+        artifact.setSourceType(sourceType);
         artifact.setStatus(Artifact.Status.PUBLISHED);
         return artifactRepository.save(artifact);
     }
@@ -44,11 +45,12 @@ public class ArtifactService {
         return artifactRepository.findBySlugAndStatus(slug, Artifact.Status.PUBLISHED);
     }
 
-    public Artifact updateArtifactOrThrow(Long id, String title, String slug, String sourceContent) {
+    public Artifact updateArtifactOrThrow(Long id, String title, String slug, Artifact.SourceType sourceType, String sourceContent) {
         Artifact artifact = getArtifactOrThrow(id);
         ensureSlugAvailableForUpdate(slug, artifact.getId());
         artifact.setTitle(title);
         artifact.setSlug(slug);
+        artifact.setSourceType(sourceType);
         artifact.setSourceContent(sourceContent);
         artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
         return artifactRepository.save(artifact);

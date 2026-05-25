@@ -37,8 +37,19 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Java Notes"))
                 .andExpect(jsonPath("$.slug").value("java-notes"))
+                .andExpect(jsonPath("$.sourceType").value("markdown"))
                 .andExpect(jsonPath("$.status").value("published"))
                 .andExpect(jsonPath("$.renderedHtml").value("<h1>Java Notes</h1>\n"));
+    }
+
+    @Test
+    void createAiChatArtifact() throws Exception {
+        createArtifact("AI Chat Notes", "ai-chat-notes", "ai_chat", "User: What is Spring Boot?\nAssistant: A Java framework.")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("AI Chat Notes"))
+                .andExpect(jsonPath("$.slug").value("ai-chat-notes"))
+                .andExpect(jsonPath("$.sourceType").value("ai_chat"))
+                .andExpect(jsonPath("$.status").value("published"));
     }
 
     @Test
@@ -96,6 +107,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Newer List Notes"))
                 .andExpect(jsonPath("$[0].slug").value("newer-list-notes"))
+                .andExpect(jsonPath("$[0].sourceType").value("markdown"))
                 .andExpect(jsonPath("$[0].status").value("published"))
                 .andExpect(jsonPath("$[0].sourceContent").doesNotExist())
                 .andExpect(jsonPath("$[0].renderedHtml").doesNotExist());
@@ -116,6 +128,7 @@ class ArtifactControllerTest {
                 .andExpect(jsonPath("$.id").value(artifactId))
                 .andExpect(jsonPath("$.title").value("Updated Notes"))
                 .andExpect(jsonPath("$.slug").value("updated-notes"))
+                .andExpect(jsonPath("$.sourceType").value("markdown"))
                 .andExpect(jsonPath("$.status").value("published"))
                 .andExpect(jsonPath("$.renderedHtml").value("<h1>Updated Notes</h1>\n"));
     }
@@ -194,10 +207,30 @@ class ArtifactControllerTest {
                 .content(artifactJson(title, slug, sourceContent)));
     }
 
+    private ResultActions createArtifact(
+            String title,
+            String slug,
+            String sourceType,
+            String sourceContent
+    ) throws Exception {
+        return mockMvc.perform(post("/api/artifacts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(artifactJson(title, slug, sourceType, sourceContent)));
+    }
+
     private String artifactJson(String title, String slug, String sourceContent) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
                 "title", title,
                 "slug", slug,
+                "sourceContent", sourceContent
+        ));
+    }
+
+    private String artifactJson(String title, String slug, String sourceType, String sourceContent) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "title", title,
+                "slug", slug,
+                "sourceType", sourceType,
                 "sourceContent", sourceContent
         ));
     }

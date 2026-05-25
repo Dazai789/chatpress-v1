@@ -35,6 +35,7 @@ public class ArtifactController {
         Artifact artifact = artifactService.createArtifact(
                 request.title(),
                 request.slug(),
+                request.toArtifactSourceType(),
                 request.sourceContent()
         );
         return ArtifactResponse.from(artifact);
@@ -61,6 +62,7 @@ public class ArtifactController {
                 id,
                 request.title(),
                 request.slug(),
+                request.toArtifactSourceType(),
                 request.sourceContent()
         );
         return ArtifactResponse.from(artifact);

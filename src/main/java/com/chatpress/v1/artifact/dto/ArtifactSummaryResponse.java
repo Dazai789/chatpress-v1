@@ -8,6 +8,7 @@ public record ArtifactSummaryResponse(
         Long id,
         String title,
         String slug,
+        String sourceType,
         String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -18,6 +19,7 @@ public record ArtifactSummaryResponse(
                 artifact.getId(),
                 artifact.getTitle(),
                 artifact.getSlug(),
+                artifact.getSourceType().name().toLowerCase(),
                 artifact.getStatus().name().toLowerCase(),
                 artifact.getCreatedAt(),
                 artifact.getUpdatedAt()
