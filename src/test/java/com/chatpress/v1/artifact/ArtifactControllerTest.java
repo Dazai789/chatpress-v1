@@ -332,7 +332,7 @@ class ArtifactControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<li>Controller</li>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<blockquote>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<code>MockMvc</code>")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("<pre><code>System.out.println(&quot;hello&quot;);")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<pre><code>System.out.println(\"hello\");")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<a href=\"https://spring.io\">Spring</a>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("blockquote {")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("pre code {")));

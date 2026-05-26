@@ -34,7 +34,7 @@ class MarkdownRendererTest {
         assertThat(html).contains("<p>Paragraph with <code>inline code</code>.</p>");
         assertThat(html).contains("<li>One</li>");
         assertThat(html).contains("<blockquote>");
-        assertThat(html).contains("<pre><code>System.out.println(&quot;hello&quot;);");
+        assertThat(html).contains("<pre><code>System.out.println(\"hello\");");
         assertThat(html).contains("<a href=\"https://spring.io\">Spring</a>");
     }
 
@@ -73,9 +73,30 @@ class MarkdownRendererTest {
                 """);
 
         assertThat(html).contains("type=\"checkbox\"");
-        assertThat(html).contains("checked=\"\"");
-        assertThat(html).contains("disabled=\"\"");
+        assertThat(html).contains("checked");
+        assertThat(html).contains("disabled");
         assertThat(html).contains("Done");
         assertThat(html).contains("Todo");
+    }
+
+    @Test
+    void removeUnsafeHtml() {
+        String html = markdownRenderer.render("""
+                # Safe Title
+
+                <script>alert("xss")</script>
+                <p onclick="alert('xss')">Safe paragraph</p>
+                <img src="https://example.com/image.png" onerror="alert('xss')">
+                <a href="javascript:alert('xss')">Bad link</a>
+                """);
+
+        assertThat(html).contains("<h1>Safe Title</h1>");
+        assertThat(html).contains("<p>Safe paragraph</p>");
+        assertThat(html).contains("<img src=\"https://example.com/image.png\">");
+        assertThat(html).contains("<a>Bad link</a>");
+        assertThat(html).doesNotContain("<script>");
+        assertThat(html).doesNotContain("onclick");
+        assertThat(html).doesNotContain("onerror");
+        assertThat(html).doesNotContain("javascript:");
     }
 }

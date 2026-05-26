@@ -11,7 +11,7 @@
 ```text
 sourceContent
 -> MarkdownRenderer
--> renderedHtml
+-> sanitized renderedHtml
 -> PublicPageRenderer
 -> /p/{slug}
 ```
@@ -123,7 +123,7 @@ Controller receives HTTP requests.
 
 ### `renderedHtml`
 
-由 `MarkdownRenderer` 从 `sourceContent` 生成。
+由 `MarkdownRenderer` 从 `sourceContent` 生成，并经过 HTML 白名单过滤后保存。
 
 当前支持常见 Markdown 和扩展语法：
 
@@ -145,6 +145,8 @@ Controller receives HTTP requests.
 ```
 
 当前创建和更新 Artifact 时会重新生成。
+
+当前会过滤 Markdown 中直接写入的不安全 HTML，例如 `script` 标签、事件属性和危险链接。
 
 ## 6. 约束
 

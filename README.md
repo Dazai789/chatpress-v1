@@ -28,7 +28,7 @@ AI 聊天记录或网页 HTML
 
 - Spring Boot 项目骨架。
 - Maven 依赖和测试流程。
-- H2 内存数据库。
+- H2 file 数据库和测试用 H2 内存数据库。
 - Spring Data JPA 数据访问。
 - Artifact 创建、列表、详情、更新、删除。
 - Markdown 文件上传 / 导入。
@@ -38,6 +38,7 @@ AI 聊天记录或网页 HTML
 - 公开页面访问：`GET /p/{slug}`。
 - 公开页面基础样式。
 - 公开页面标题 HTML 转义。
+- 公开 HTML 安全过滤。
 - 草稿 / 发布状态控制。
 - 公开页面只展示 `published` 内容。
 - 统一错误响应。
@@ -47,7 +48,6 @@ AI 聊天记录或网页 HTML
 
 - 还没有后台管理页面，当前主要通过 API 操作。
 - 还没有登录、鉴权和用户隔离。
-- 公开 HTML 还没有做安全过滤。
 - 列表接口还没有分页、搜索和状态筛选。
 - 数据库迁移还没有使用 Flyway / Liquibase 管理。
 
@@ -146,18 +146,18 @@ docs/
 
 ## 当前进度
 
-基础 Markdown 发布链路和 Markdown 文件导入已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步应优先补齐公开 HTML 的安全过滤。
+基础 Markdown 发布链路、Markdown 文件导入和公开 HTML 安全过滤已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步可以补齐列表查询能力。
 
 下一步建议做：
 
 ```text
-HTML 安全过滤
+列表分页、搜索和状态筛选
 ```
 
 优先方向：
 
 ```text
-过滤 Markdown 中直接写入的不安全 HTML
-保留常见安全标签和 Markdown 渲染结果
-为脚本、事件属性、危险链接补测试
+GET /api/artifacts 增加分页参数
+支持按 title 搜索
+支持按 draft / published 状态筛选
 ```

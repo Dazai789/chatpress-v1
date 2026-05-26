@@ -8,6 +8,9 @@ import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,8 +33,17 @@ public class MarkdownRenderer {
             .extensions(extensions)
             .build();
 
+    private final Safelist safelist = Safelist.relaxed()
+            .addTags("del")
+            .addTags("input")
+            .addAttributes("input", "type", "checked", "disabled");
+
+    private final Document.OutputSettings outputSettings = new Document.OutputSettings()
+            .prettyPrint(false);
+
     public String render(String markdown) {
         Node document = parser.parse(markdown);
-        return renderer.render(document);
+        String html = renderer.render(document);
+        return Jsoup.clean(html, "", safelist, outputSettings);
     }
 }
