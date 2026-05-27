@@ -36,6 +36,7 @@
 /admin/artifacts
 /admin/artifacts/new
 /admin/artifacts/{id}
+/admin/artifacts/{id}/edit
 ```
 
 ## 3. 创建 Artifact
@@ -398,7 +399,9 @@ text/html
 GET /admin/artifacts
 GET /admin/artifacts/new
 GET /admin/artifacts/{id}
+GET /admin/artifacts/{id}/edit
 POST /admin/artifacts
+POST /admin/artifacts/{id}
 ```
 
 ### 查询参数
@@ -490,6 +493,64 @@ GET /admin/artifacts/{id}
 - 更新时间。
 - 原始 Markdown。
 - 渲染后的 HTML 预览。
+- 编辑入口。
+
+响应类型：
+
+```text
+text/html
+```
+
+### 编辑页面
+
+```text
+GET /admin/artifacts/{id}/edit
+```
+
+返回 HTML 编辑表单页面，包含：
+
+- `title`
+- `sourceContent`
+- `status`
+
+响应类型：
+
+```text
+text/html
+```
+
+### 提交编辑表单
+
+```text
+POST /admin/artifacts/{id}
+Content-Type: application/x-www-form-urlencoded
+```
+
+表单字段：
+
+| 字段 | 必填 | 说明 |
+|---|---:|---|
+| `title` | 是 | 页面标题。 |
+| `sourceContent` | 是 | Markdown 原文。 |
+| `status` | 是 | `draft` 或 `published`。 |
+
+说明：
+
+- 更新标题和 Markdown。
+- 更新不会改变 `slug`。
+- 提交后会重新生成 `renderedHtml`。
+- 支持同步修改 draft / published 状态。
+
+成功后返回：
+
+```text
+303 See Other
+Location: /admin/artifacts/{id}
+```
+
+标题或 Markdown 为空时返回 `400 Bad Request`，并重新渲染编辑表单页面。
+
+状态不是 `draft` 或 `published` 时返回 `400 Bad Request`，并重新渲染编辑表单页面。
 
 响应类型：
 

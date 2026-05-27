@@ -59,6 +59,7 @@ chatpress-v1 的定位是：
 - 后台 artifact 列表页。
 - 后台 artifact 新建页。
 - 后台 artifact 详情页。
+- 后台 artifact 编辑页。
 - 查看 artifact 详情。
 - Markdown 文件上传 / 导入。
 - Markdown 渲染为 HTML。
@@ -102,7 +103,6 @@ chatpress-v1 的定位是：
 
 当前后端基础发布链路已经打通，但还不是完整产品，主要缺口是：
 
-- 后台管理页面暂时没有编辑页面。
 - 没有登录、鉴权和用户隔离。
 - slug 删除后是否复用还没有形成明确产品规则。
 - 数据库结构还没有使用 Flyway / Liquibase 管理迁移。
@@ -151,16 +151,16 @@ chatpress-v1 的定位是：
 下一阶段建议实现：
 
 ```text
-后台 artifact 编辑页
+数据库迁移管理
 ```
 
 优先级：
 
 ```text
-1. 从后台详情页进入编辑。
-2. 支持修改标题和 Markdown。
-3. 支持重新生成 renderedHtml。
-4. 支持修改 draft / published 状态。
+1. 引入 Flyway / Liquibase。
+2. 固化 artifact 表结构。
+3. 关闭生产环境对 hibernate ddl-auto=update 的依赖。
+4. 为后续新增字段和表保留清晰迁移路径。
 ```
 
 AI 聊天记录导入、网页 HTML 导入、浏览器扩展放到后续版本：

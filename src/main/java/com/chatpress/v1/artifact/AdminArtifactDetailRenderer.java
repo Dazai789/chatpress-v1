@@ -79,6 +79,23 @@ public class AdminArtifactDetailRenderer {
                             text-decoration: none;
                         }
 
+                        .actions {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+
+                        .secondary-link {
+                            display: inline-flex;
+                            align-items: center;
+                            height: 34px;
+                            padding: 0 12px;
+                            border: 1px solid #c9c6bd;
+                            border-radius: 6px;
+                            background: #ffffff;
+                            text-decoration: none;
+                        }
+
                         .meta {
                             display: grid;
                             grid-template-columns: 150px 1fr;
@@ -159,6 +176,10 @@ public class AdminArtifactDetailRenderer {
                                 flex-direction: column;
                             }
 
+                            .actions {
+                                flex-wrap: wrap;
+                            }
+
                             .meta {
                                 grid-template-columns: 1fr;
                             }
@@ -169,7 +190,10 @@ public class AdminArtifactDetailRenderer {
                     <header>
                         <div class="shell topbar">
                             <h1>%s</h1>
-                            <a class="button-link" href="/admin/artifacts">Back to list</a>
+                            <div class="actions">
+                                <a class="secondary-link" href="/admin/artifacts/%d/edit">Edit</a>
+                                <a class="button-link" href="/admin/artifacts">Back to list</a>
+                            </div>
                         </div>
                     </header>
                     <main class="shell">
@@ -197,6 +221,7 @@ public class AdminArtifactDetailRenderer {
                 """.formatted(
                 escapeHtml(artifact.getTitle()),
                 escapeHtml(artifact.getTitle()),
+                artifact.getId(),
                 escapeHtml(status),
                 escapeHtml(status),
                 escapeHtml(artifact.getSlug()),

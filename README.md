@@ -45,12 +45,12 @@ AI 聊天记录或网页 HTML
 - 后台 artifact 列表页面。
 - 后台 artifact 新建页面。
 - 后台 artifact 详情页面。
+- 后台 artifact 编辑页面。
 - 统一错误响应。
 - 基础接口测试。
 
 ## 当前欠缺能力
 
-- 后台管理页面暂时没有编辑页面。
 - 还没有登录、鉴权和用户隔离。
 - 数据库迁移还没有使用 Flyway / Liquibase 管理。
 
@@ -68,7 +68,9 @@ GET    /p/{slug}
 GET    /admin/artifacts
 GET    /admin/artifacts/new
 GET    /admin/artifacts/{id}
+GET    /admin/artifacts/{id}/edit
 POST   /admin/artifacts
+POST   /admin/artifacts/{id}
 ```
 
 ## 核心数据对象
@@ -159,18 +161,18 @@ docs/
 
 ## 当前进度
 
-基础 Markdown 发布链路、Markdown 文件导入、公开 HTML 安全过滤、列表查询能力、后台列表页、后台新建页和后台详情页已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步可以继续补后台编辑体验，或开始数据库迁移能力。
+基础 Markdown 发布链路、Markdown 文件导入、公开 HTML 安全过滤、列表查询能力、后台列表页、后台新建页、后台详情页和后台编辑页已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步可以继续补登录鉴权，或开始数据库迁移能力。
 
 下一步建议做：
 
 ```text
-后台 artifact 编辑页
+数据库迁移管理
 ```
 
 优先方向：
 
 ```text
-从详情页进入编辑
-支持修改标题和 Markdown
-支持修改 draft / published 状态
+引入 Flyway / Liquibase
+把 artifact 表结构固化为迁移脚本
+避免后续依赖 hibernate ddl-auto 自动改表
 ```

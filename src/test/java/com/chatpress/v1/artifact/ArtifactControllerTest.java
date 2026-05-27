@@ -446,7 +446,89 @@ class ArtifactControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("# Detail Notes")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<h1>Detail Notes</h1>")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/p/detail-notes")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/admin/artifacts/" + artifactId + "/edit")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Back to list")));
+    }
+
+    @Test
+    void getEditAdminArtifactForm() throws Exception {
+        MvcResult result = createArtifact("Editable Notes", "# Editable Notes\n\nOriginal body.")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(get("/admin/artifacts/{id}/edit", artifactId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<title>Edit Artifact - Admin</title>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/artifacts/" + artifactId + "\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("value=\"Editable Notes\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("# Editable Notes")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"status\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("value=\"published\" selected")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Cancel")));
+    }
+
+    @Test
+    void updateArtifactFromAdminForm() throws Exception {
+        MvcResult result = createArtifact("Admin Old Notes", "# Admin Old Notes")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("title", "Admin Updated Notes")
+                        .param("sourceContent", "# Admin Updated Notes")
+                        .param("status", "draft"))
+                .andExpect(status().isSeeOther())
+                .andExpect(redirectedUrl("/admin/artifacts/" + artifactId));
+
+        mockMvc.perform(get("/api/artifacts/{id}", artifactId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Admin Updated Notes"))
+                .andExpect(jsonPath("$.slug").value("admin-old-notes"))
+                .andExpect(jsonPath("$.status").value("draft"))
+                .andExpect(jsonPath("$.renderedHtml").value("<h1>Admin Updated Notes</h1>\n"));
+    }
+
+    @Test
+    void rejectBlankAdminEditForm() throws Exception {
+        MvcResult result = createArtifact("Blank Edit Notes", "# Blank Edit Notes")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("title", "")
+                        .param("sourceContent", "")
+                        .param("status", "published"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Title and Markdown are required")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/artifacts/" + artifactId + "\"")));
+    }
+
+    @Test
+    void rejectInvalidAdminEditStatus() throws Exception {
+        MvcResult result = createArtifact("Invalid Status Notes", "# Invalid Status Notes")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("title", "Invalid Status Notes")
+                        .param("sourceContent", "# Invalid Status Notes")
+                        .param("status", "archived"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Status must be draft or published")));
     }
 
     @Test

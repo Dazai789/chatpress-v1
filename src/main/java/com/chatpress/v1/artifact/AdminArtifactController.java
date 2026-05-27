@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.Locale;
 
 @RestController
 public class AdminArtifactController {
@@ -54,6 +55,12 @@ public class AdminArtifactController {
         return adminArtifactDetailRenderer.render(artifact);
     }
 
+    @GetMapping(value = "/admin/artifacts/{id}/edit", produces = MediaType.TEXT_HTML_VALUE)
+    public String editArtifactForm(@PathVariable Long id) {
+        Artifact artifact = artifactService.getArtifactOrThrow(id);
+        return adminArtifactFormRenderer.renderEdit(artifact, null);
+    }
+
     @PostMapping(
             value = "/admin/artifacts",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
@@ -76,5 +83,58 @@ public class AdminArtifactController {
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
+    }
+
+    @PostMapping(
+            value = "/admin/artifacts/{id}",
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.TEXT_HTML_VALUE
+    )
+    public ResponseEntity<String> updateArtifact(
+            @PathVariable Long id,
+            @RequestParam String title,
+            @RequestParam String sourceContent,
+            @RequestParam String status
+    ) {
+        if (title.isBlank() || sourceContent.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(adminArtifactFormRenderer.renderEdit(
+                            id,
+                            title,
+                            sourceContent,
+                            status,
+                            "Title and Markdown are required"
+                    ));
+        }
+
+        Artifact.Status artifactStatus = parseStatus(status);
+        if (artifactStatus == null) {
+            return ResponseEntity.badRequest()
+                    .body(adminArtifactFormRenderer.renderEdit(
+                            id,
+                            title,
+                            sourceContent,
+                            status,
+                            "Status must be draft or published"
+                    ));
+        }
+
+        artifactService.updateArtifactOrThrow(id, title.trim(), sourceContent);
+        artifactService.updateArtifactStatusOrThrow(id, artifactStatus);
+        return ResponseEntity.status(303)
+                .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts/" + id).toString())
+                .build();
+    }
+
+    private Artifact.Status parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Artifact.Status.valueOf(status.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }
