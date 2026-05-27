@@ -1,6 +1,7 @@
 package com.chatpress.v1.artifact;
 
 import com.chatpress.v1.artifact.dto.ArtifactRequest;
+import com.chatpress.v1.artifact.dto.ArtifactPageResponse;
 import com.chatpress.v1.artifact.dto.ArtifactResponse;
 import com.chatpress.v1.artifact.dto.ArtifactStatusRequest;
 import com.chatpress.v1.artifact.dto.ArtifactSummaryResponse;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/artifacts")
@@ -52,10 +51,16 @@ public class ArtifactController {
     }
 
     @GetMapping
-    public List<ArtifactSummaryResponse> listArtifacts() {
-        return artifactService.listArtifacts().stream()
-                .map(ArtifactSummaryResponse::from)
-                .toList();
+    public ArtifactPageResponse<ArtifactSummaryResponse> listArtifacts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String status
+    ) {
+        return ArtifactPageResponse.from(
+                artifactService.listArtifacts(page, size, q, status)
+                        .map(ArtifactSummaryResponse::from)
+        );
     }
 
     @GetMapping("/{id}")

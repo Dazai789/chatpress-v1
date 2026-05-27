@@ -41,6 +41,7 @@ AI 聊天记录或网页 HTML
 - 公开 HTML 安全过滤。
 - 草稿 / 发布状态控制。
 - 公开页面只展示 `published` 内容。
+- 列表分页、标题搜索和状态筛选。
 - 统一错误响应。
 - 基础接口测试。
 
@@ -48,7 +49,6 @@ AI 聊天记录或网页 HTML
 
 - 还没有后台管理页面，当前主要通过 API 操作。
 - 还没有登录、鉴权和用户隔离。
-- 列表接口还没有分页、搜索和状态筛选。
 - 数据库迁移还没有使用 Flyway / Liquibase 管理。
 
 ## 当前接口
@@ -116,11 +116,13 @@ src/main/java/com/chatpress/v1/
     PublicPageRenderer.java
     dto/
       ArtifactRequest.java
+      ArtifactPageResponse.java
       ArtifactResponse.java
       ArtifactStatusRequest.java
       ArtifactSummaryResponse.java
     exception/
       ArtifactNotFoundException.java
+      InvalidArtifactQueryException.java
       InvalidMarkdownImportException.java
   common/
     ApiErrorResponse.java
@@ -146,18 +148,18 @@ docs/
 
 ## 当前进度
 
-基础 Markdown 发布链路、Markdown 文件导入和公开 HTML 安全过滤已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步可以补齐列表查询能力。
+基础 Markdown 发布链路、Markdown 文件导入、公开 HTML 安全过滤和列表查询能力已经完成。按 V1 Markdown Publisher 估算，当前后端基础能力已经比较完整，下一步可以开始补后台管理体验或数据库迁移能力。
 
 下一步建议做：
 
 ```text
-列表分页、搜索和状态筛选
+后台管理页面雏形
 ```
 
 优先方向：
 
 ```text
-GET /api/artifacts 增加分页参数
-支持按 title 搜索
-支持按 draft / published 状态筛选
+用现有 API 做 artifact 列表页
+支持查看、搜索、状态筛选
+支持打开公开页面
 ```

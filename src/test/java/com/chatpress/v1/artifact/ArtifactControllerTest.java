@@ -224,14 +224,73 @@ class ArtifactControllerTest {
         createArtifact("Newer List Notes", "# Newer List Notes")
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/api/artifacts"))
+        mockMvc.perform(get("/api/artifacts")
+                        .param("q", "List Notes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Newer List Notes"))
-                .andExpect(jsonPath("$[0].slug").value("newer-list-notes"))
-                .andExpect(jsonPath("$[0].sourceFormat").value("markdown"))
-                .andExpect(jsonPath("$[0].status").value("published"))
-                .andExpect(jsonPath("$[0].sourceContent").doesNotExist())
-                .andExpect(jsonPath("$[0].renderedHtml").doesNotExist());
+                .andExpect(jsonPath("$.items[0].title").value("Newer List Notes"))
+                .andExpect(jsonPath("$.items[0].slug").value("newer-list-notes"))
+                .andExpect(jsonPath("$.items[0].sourceFormat").value("markdown"))
+                .andExpect(jsonPath("$.items[0].status").value("published"))
+                .andExpect(jsonPath("$.items[0].sourceContent").doesNotExist())
+                .andExpect(jsonPath("$.items[0].renderedHtml").doesNotExist())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalItems").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void listArtifactsSupportsPagination() throws Exception {
+        createArtifact("First Page Notes", "# First Page Notes")
+                .andExpect(status().isCreated());
+        createArtifact("Second Page Notes", "# Second Page Notes")
+                .andExpect(status().isCreated());
+        createArtifact("Third Page Notes", "# Third Page Notes")
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/artifacts")
+                        .param("q", "Page Notes")
+                        .param("page", "1")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].title").value("Second Page Notes"))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalItems").value(3))
+                .andExpect(jsonPath("$.totalPages").value(3));
+    }
+
+    @Test
+    void listArtifactsSupportsStatusFilter() throws Exception {
+        createArtifact("Published Filter Notes", "# Published Filter Notes")
+                .andExpect(status().isCreated());
+        MvcResult draftResult = createArtifact("Draft Filter Notes", "# Draft Filter Notes")
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer draftArtifactId = artifactIdFrom(draftResult);
+
+        mockMvc.perform(put("/api/artifacts/{id}/status", draftArtifactId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusJson("draft")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/artifacts")
+                        .param("q", "Filter Notes")
+                        .param("status", "draft"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].title").value("Draft Filter Notes"))
+                .andExpect(jsonPath("$.items[0].status").value("draft"))
+                .andExpect(jsonPath("$.totalItems").value(1));
+    }
+
+    @Test
+    void rejectInvalidListQueryParameters() throws Exception {
+        mockMvc.perform(get("/api/artifacts")
+                        .param("status", "archived"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_QUERY_PARAMETER"))
+                .andExpect(jsonPath("$.message").value("Status must be draft or published"));
     }
 
     @Test

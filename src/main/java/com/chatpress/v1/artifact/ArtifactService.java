@@ -1,7 +1,11 @@
 package com.chatpress.v1.artifact;
 
 import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
+import com.chatpress.v1.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.v1.artifact.exception.InvalidMarkdownImportException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -9,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -18,6 +21,7 @@ public class ArtifactService {
 
     private static final long MAX_MARKDOWN_FILE_SIZE = 2 * 1024 * 1024;
     private static final int MAX_TITLE_LENGTH = 200;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final ArtifactRepository artifactRepository;
     private final MarkdownRenderer markdownRenderer;
@@ -50,8 +54,33 @@ public class ArtifactService {
         return createArtifact(finalTitle, sourceContent);
     }
 
-    public List<Artifact> listArtifacts() {
-        return artifactRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    public Page<Artifact> listArtifacts(int page, int size, String q, String status) {
+        PageRequest pageRequest = PageRequest.of(
+                normalizePage(page),
+                normalizePageSize(size),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Specification<Artifact> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+
+        Optional<String> keyword = normalizeSearchKeyword(q);
+        if (keyword.isPresent()) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("title")),
+                            "%" + keyword.get().toLowerCase(Locale.ROOT) + "%"
+                    )
+            );
+        }
+
+        Optional<Artifact.Status> artifactStatus = parseStatus(status);
+        if (artifactStatus.isPresent()) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("status"), artifactStatus.get())
+            );
+        }
+
+        return artifactRepository.findAll(specification, pageRequest);
     }
 
     public Artifact getArtifactOrThrow(Long id) {
@@ -155,6 +184,39 @@ public class ArtifactService {
     private void validateTitle(String title) {
         if (title.length() > MAX_TITLE_LENGTH) {
             throw new InvalidMarkdownImportException("Title must be 200 characters or fewer");
+        }
+    }
+
+    private int normalizePage(int page) {
+        if (page < 0) {
+            throw new InvalidArtifactQueryException("Page must be 0 or greater");
+        }
+        return page;
+    }
+
+    private int normalizePageSize(int size) {
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            throw new InvalidArtifactQueryException("Size must be between 1 and 100");
+        }
+        return size;
+    }
+
+    private Optional<String> normalizeSearchKeyword(String q) {
+        if (q == null || q.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(q.trim());
+    }
+
+    private Optional<Artifact.Status> parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(Artifact.Status.valueOf(status.trim().toUpperCase(Locale.ROOT)));
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidArtifactQueryException("Status must be draft or published");
         }
     }
 }

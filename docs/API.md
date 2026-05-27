@@ -147,28 +147,65 @@ title: Spring Boot Notes
 GET /api/artifacts
 ```
 
+### 查询参数
+
+| 参数 | 必填 | 默认值 | 说明 |
+|---|---:|---:|---|
+| `page` | 否 | `0` | 页码，从 0 开始。 |
+| `size` | 否 | `10` | 每页数量，范围 1 到 100。 |
+| `q` | 否 | 无 | 按标题模糊搜索。 |
+| `status` | 否 | 无 | 按状态筛选，只支持 `draft` 或 `published`。 |
+
+### 示例
+
+```text
+GET /api/artifacts?page=0&size=10&q=spring&status=published
+```
+
 ### 响应体
 
 ```json
-[
-  {
-    "id": 1,
-    "title": "Spring Boot Notes",
-    "slug": "spring-boot-notes",
-    "sourceFormat": "markdown",
-    "status": "published",
-    "createdAt": "2026-05-25T20:00:00",
-    "updatedAt": "2026-05-25T20:00:00"
-  }
-]
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Spring Boot Notes",
+      "slug": "spring-boot-notes",
+      "sourceFormat": "markdown",
+      "status": "published",
+      "createdAt": "2026-05-25T20:00:00",
+      "updatedAt": "2026-05-25T20:00:00"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalItems": 1,
+  "totalPages": 1
+}
 ```
 
 ### 说明
 
 - 按 `createdAt` 倒序返回。
+- 支持分页、标题搜索和状态筛选。
 - 返回摘要信息。
 - 不返回 `sourceContent`。
 - 不返回 `renderedHtml`。
+
+### 可能错误
+
+查询参数不合法：
+
+```text
+400 Bad Request
+```
+
+```json
+{
+  "code": "INVALID_QUERY_PARAMETER",
+  "message": "Status must be draft or published"
+}
+```
 
 ## 6. 获取 Artifact 详情
 
@@ -378,6 +415,7 @@ JSON API 错误统一返回：
 | `VALIDATION_FAILED` | 400 | 请求参数不合法。 |
 | `INVALID_REQUEST_BODY` | 400 | 请求体缺失或 JSON 格式错误。 |
 | `INVALID_PATH_VARIABLE` | 400 | 路径参数类型不合法。 |
+| `INVALID_QUERY_PARAMETER` | 400 | 查询参数不合法。 |
 | `INVALID_MARKDOWN_FILE` | 400 | Markdown 导入文件不合法。 |
 | `ARTIFACT_NOT_FOUND` | 404 | artifact 不存在。 |
 | `METHOD_NOT_ALLOWED` | 405 | HTTP 方法不支持。 |
@@ -392,8 +430,6 @@ JSON API 错误统一返回：
 - 登录 / 注册。
 - 用户权限。
 - 标签。
-- 搜索。
-- 分页。
 - 自动读取 AI 平台聊天记录。
 - LLM 总结。
 - DOCX / PDF 导入。

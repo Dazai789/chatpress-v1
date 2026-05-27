@@ -1,6 +1,7 @@
 package com.chatpress.v1.common;
 
 import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
+import com.chatpress.v1.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.v1.artifact.exception.InvalidMarkdownImportException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleInvalidMarkdownImport(InvalidMarkdownImportException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiErrorResponse("INVALID_MARKDOWN_FILE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidArtifactQueryException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidArtifactQuery(InvalidArtifactQueryException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiErrorResponse("INVALID_QUERY_PARAMETER", exception.getMessage()));
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
