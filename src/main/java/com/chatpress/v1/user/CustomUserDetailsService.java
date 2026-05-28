@@ -1,4 +1,4 @@
-package com.chatpress.v1.config;
+package com.chatpress.v1.user;
 
 import java.util.List;
 
@@ -7,9 +7,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import com.chatpress.v1.user.User;
-import com.chatpress.v1.user.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

@@ -1,5 +1,6 @@
 package com.chatpress.v1.common;
 
+import com.chatpress.v1.auth.AuthenticationException;
 import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.v1.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.v1.artifact.exception.InvalidMarkdownImportException;
@@ -20,6 +21,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiErrorResponse("UNAUTHORIZED", exception.getMessage()));
+    }
 
     @ExceptionHandler(ArtifactNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleArtifactNotFound(ArtifactNotFoundException exception) {

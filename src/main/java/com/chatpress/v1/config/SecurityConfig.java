@@ -10,21 +10,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.chatpress.v1.auth.JwtUtil;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil;
+    private final JwtAuthenticationFilter jwtFilter;
 
-    public SecurityConfig(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil);
 
         http
             .authorizeHttpRequests(auth -> auth

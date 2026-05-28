@@ -19,6 +19,9 @@ public class JwtUtil {
 
     public JwtUtil(@Value("${jwt.secret}") String secret,
                    @Value("${jwt.expiration-ms:86400000}") long expirationMs) {
+        if (secret.getBytes().length < 32) {
+            throw new IllegalArgumentException("jwt.secret must be at least 32 bytes for HS256");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }

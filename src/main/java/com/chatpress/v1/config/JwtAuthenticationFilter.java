@@ -10,12 +10,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.chatpress.v1.auth.JwtUtil;
 
+import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
