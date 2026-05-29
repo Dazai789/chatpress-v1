@@ -1,4 +1,4 @@
-package com.chatpress.v1.auth;
+package com.chatpress.v1.security;
 
 import java.util.Date;
 

@@ -51,17 +51,21 @@ public class Artifact {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false, length = 50)
+    private String createdBy;
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     protected Artifact() {
     }
 
-    public Artifact(String title, String slug, String sourceContent, String renderedHtml) {
+    public Artifact(String title, String slug, String sourceContent, String renderedHtml, String createdBy) {
         this.title = title;
         this.slug = slug;
         this.sourceContent = sourceContent;
         this.renderedHtml = renderedHtml;
+        this.createdBy = createdBy;
     }
 
     @PrePersist
@@ -130,6 +134,10 @@ public class Artifact {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
     }
 
     public LocalDateTime getUpdatedAt() {

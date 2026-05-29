@@ -1,0 +1,1 @@
+ALTER TABLE artifact ADD COLUMN created_by VARCHAR(50) NOT NULL DEFAULT 'admin';

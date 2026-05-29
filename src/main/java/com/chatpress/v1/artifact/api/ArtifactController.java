@@ -1,5 +1,7 @@
-package com.chatpress.v1.artifact;
+package com.chatpress.v1.artifact.api;
 
+import com.chatpress.v1.artifact.Artifact;
+import com.chatpress.v1.artifact.ArtifactService;
 import com.chatpress.v1.artifact.dto.ArtifactRequest;
 import com.chatpress.v1.artifact.dto.ArtifactPageResponse;
 import com.chatpress.v1.artifact.dto.ArtifactResponse;
@@ -9,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +39,8 @@ public class ArtifactController {
     public ArtifactResponse createArtifact(@Valid @RequestBody ArtifactRequest request) {
         Artifact artifact = artifactService.createArtifact(
                 request.title(),
-                request.sourceContent()
+                request.sourceContent(),
+                currentUsername()
         );
         return ArtifactResponse.from(artifact);
     }
@@ -47,7 +51,7 @@ public class ArtifactController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "title", required = false) String title
     ) {
-        return ArtifactResponse.from(artifactService.importMarkdownFile(file, title));
+        return ArtifactResponse.from(artifactService.importMarkdownFile(file, title, currentUsername()));
     }
 
     @GetMapping
@@ -58,14 +62,14 @@ public class ArtifactController {
             @RequestParam(required = false) String status
     ) {
         return ArtifactPageResponse.from(
-                artifactService.listArtifacts(page, size, q, status)
+                artifactService.listArtifacts(page, size, q, status, currentUsername())
                         .map(ArtifactSummaryResponse::from)
         );
     }
 
     @GetMapping("/{id}")
     public ArtifactResponse getArtifact(@PathVariable Long id) {
-        return ArtifactResponse.from(artifactService.getArtifactOrThrow(id));
+        return ArtifactResponse.from(artifactService.getArtifactOrThrow(id, currentUsername()));
     }
 
     @PutMapping("/{id}")
@@ -76,7 +80,8 @@ public class ArtifactController {
         Artifact artifact = artifactService.updateArtifactOrThrow(
                 id,
                 request.title(),
-                request.sourceContent()
+                request.sourceContent(),
+                currentUsername()
         );
         return ArtifactResponse.from(artifact);
     }
@@ -86,13 +91,17 @@ public class ArtifactController {
             @PathVariable Long id,
             @Valid @RequestBody ArtifactStatusRequest request
     ) {
-        Artifact artifact = artifactService.updateArtifactStatusOrThrow(id, request.toArtifactStatus());
+        Artifact artifact = artifactService.updateArtifactStatusOrThrow(id, request.toArtifactStatus(), currentUsername());
         return ArtifactResponse.from(artifact);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArtifact(@PathVariable Long id) {
-        artifactService.deleteArtifactOrThrow(id);
+        artifactService.deleteArtifactOrThrow(id, currentUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    private String currentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

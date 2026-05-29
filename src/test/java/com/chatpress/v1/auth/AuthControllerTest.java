@@ -1,5 +1,7 @@
 package com.chatpress.v1.auth;
 
+import com.chatpress.v1.auth.api.LoginRequest;
+import com.chatpress.v1.auth.api.RegisterRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,56 @@ class AuthControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void registerSuccess() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new RegisterRequest("newuser", "password123"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.username").value("newuser"))
+                .andExpect(jsonPath("$.role").value("USER"));
+    }
+
+    @Test
+    void registerDuplicateUsername() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new RegisterRequest("admin", "password123"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("DUPLICATE_USERNAME"));
+    }
+
+    @Test
+    void registerWithBlankUsername() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new RegisterRequest("", "password123"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void registerWithShortPassword() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new RegisterRequest("newuser", "12345"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
 
     @Test
     void loginSuccess() throws Exception {

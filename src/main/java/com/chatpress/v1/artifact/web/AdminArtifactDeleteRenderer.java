@@ -1,4 +1,6 @@
-package com.chatpress.v1.artifact;
+package com.chatpress.v1.artifact.web;
+
+import com.chatpress.v1.artifact.Artifact;
 
 import org.springframework.stereotype.Component;
 

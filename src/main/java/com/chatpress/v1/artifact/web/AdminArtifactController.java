@@ -1,11 +1,14 @@
-package com.chatpress.v1.artifact;
+package com.chatpress.v1.artifact.web;
 
+import com.chatpress.v1.artifact.Artifact;
+import com.chatpress.v1.artifact.ArtifactService;
 import com.chatpress.v1.artifact.exception.InvalidMarkdownImportException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,7 +53,7 @@ public class AdminArtifactController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String status
     ) {
-        Page<Artifact> artifacts = artifactService.listArtifacts(page, size, q, status);
+        Page<Artifact> artifacts = artifactService.listArtifacts(page, size, q, status, currentUsername());
         return adminArtifactPageRenderer.render(artifacts, q, status);
     }
 
@@ -66,19 +69,19 @@ public class AdminArtifactController {
 
     @GetMapping(value = "/admin/artifacts/{id}", produces = MediaType.TEXT_HTML_VALUE)
     public String getArtifact(@PathVariable Long id) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id);
+        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
         return adminArtifactDetailRenderer.render(artifact);
     }
 
     @GetMapping(value = "/admin/artifacts/{id}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public String editArtifactForm(@PathVariable Long id, HttpServletRequest request) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id);
+        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
         return adminArtifactFormRenderer.renderEdit(artifact, null, csrfToken(request));
     }
 
     @GetMapping(value = "/admin/artifacts/{id}/delete", produces = MediaType.TEXT_HTML_VALUE)
     public String deleteArtifactForm(@PathVariable Long id, HttpServletRequest request) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id);
+        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
         return adminArtifactDeleteRenderer.render(artifact, csrfToken(request));
     }
 
@@ -102,7 +105,7 @@ public class AdminArtifactController {
                     ));
         }
 
-        artifactService.createArtifact(title.trim(), sourceContent);
+        artifactService.createArtifact(title.trim(), sourceContent, currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
@@ -119,7 +122,7 @@ public class AdminArtifactController {
             HttpServletRequest request
     ) {
         try {
-            Artifact artifact = artifactService.importMarkdownFile(file, title);
+            Artifact artifact = artifactService.importMarkdownFile(file, title, currentUsername());
             return ResponseEntity.status(303)
                     .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts/" + artifact.getId()).toString())
                     .build();
@@ -166,8 +169,8 @@ public class AdminArtifactController {
                     ));
         }
 
-        artifactService.updateArtifactOrThrow(id, title.trim(), sourceContent);
-        artifactService.updateArtifactStatusOrThrow(id, artifactStatus);
+        artifactService.updateArtifactOrThrow(id, title.trim(), sourceContent, currentUsername());
+        artifactService.updateArtifactStatusOrThrow(id, artifactStatus, currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts/" + id).toString())
                 .build();
@@ -178,7 +181,7 @@ public class AdminArtifactController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
     )
     public ResponseEntity<Void> deleteArtifact(@PathVariable Long id) {
-        artifactService.deleteArtifactOrThrow(id);
+        artifactService.deleteArtifactOrThrow(id, currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
@@ -187,6 +190,10 @@ public class AdminArtifactController {
     private String csrfToken(HttpServletRequest request) {
         CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
         return token != null ? token.getToken() : "";
+    }
+
+    private String currentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     private Artifact.Status parseStatus(String status) {

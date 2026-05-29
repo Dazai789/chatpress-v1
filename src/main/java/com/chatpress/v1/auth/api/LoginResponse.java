@@ -1,4 +1,4 @@
-package com.chatpress.v1.auth;
+package com.chatpress.v1.auth.api;
 
 public record LoginResponse(
         String token,

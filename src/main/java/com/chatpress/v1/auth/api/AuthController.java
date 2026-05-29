@@ -1,4 +1,10 @@
-package com.chatpress.v1.auth;
+package com.chatpress.v1.auth.api;
+
+import com.chatpress.v1.auth.exception.AuthenticationException;
+import com.chatpress.v1.auth.exception.DuplicateUsernameException;
+import com.chatpress.v1.security.JwtUtil;
+import com.chatpress.v1.user.User;
+import com.chatpress.v1.user.UserRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,8 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chatpress.v1.user.User;
-import com.chatpress.v1.user.UserRepository;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -25,6 +30,26 @@ public class AuthController {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+    }
+
+    @PostMapping("/register")
+    public Map<String, Object> register(@Valid @RequestBody RegisterRequest request) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
+            throw new DuplicateUsernameException(request.username());
+        }
+
+        User user = new User(
+                request.username(),
+                passwordEncoder.encode(request.password()),
+                "USER"
+        );
+        user = userRepository.save(user);
+
+        return Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "role", user.getRole()
+        );
     }
 
     @PostMapping("/login")

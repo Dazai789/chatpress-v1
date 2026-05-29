@@ -1,4 +1,6 @@
-package com.chatpress.v1.artifact;
+package com.chatpress.v1.artifact.web;
+
+import com.chatpress.v1.artifact.ArtifactService;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

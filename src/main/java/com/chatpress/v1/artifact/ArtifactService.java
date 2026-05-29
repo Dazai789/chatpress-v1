@@ -31,15 +31,15 @@ public class ArtifactService {
         this.markdownRenderer = markdownRenderer;
     }
 
-    public Artifact createArtifact(String title, String sourceContent) {
+    public Artifact createArtifact(String title, String sourceContent, String username) {
         String finalSlug = generateSlug(title);
 
-        Artifact artifact = new Artifact(title, finalSlug, sourceContent, markdownRenderer.render(sourceContent));
+        Artifact artifact = new Artifact(title, finalSlug, sourceContent, markdownRenderer.render(sourceContent), username);
         artifact.setStatus(Artifact.Status.PUBLISHED);
         return artifactRepository.save(artifact);
     }
 
-    public Artifact importMarkdownFile(MultipartFile file, String title) {
+    public Artifact importMarkdownFile(MultipartFile file, String title, String username) {
         validateMarkdownFile(file);
 
         String finalTitle = normalizeTitle(title)
@@ -51,17 +51,18 @@ public class ArtifactService {
             throw new InvalidMarkdownImportException("Markdown file must not be empty");
         }
 
-        return createArtifact(finalTitle, sourceContent);
+        return createArtifact(finalTitle, sourceContent, username);
     }
 
-    public Page<Artifact> listArtifacts(int page, int size, String q, String status) {
+    public Page<Artifact> listArtifacts(int page, int size, String q, String status, String username) {
         PageRequest pageRequest = PageRequest.of(
                 normalizePage(page),
                 normalizePageSize(size),
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        Specification<Artifact> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        Specification<Artifact> specification = (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("createdBy"), username);
 
         Optional<String> keyword = normalizeSearchKeyword(q);
         if (keyword.isPresent()) {
@@ -83,9 +84,13 @@ public class ArtifactService {
         return artifactRepository.findAll(specification, pageRequest);
     }
 
-    public Artifact getArtifactOrThrow(Long id) {
-        return artifactRepository.findById(id)
+    public Artifact getArtifactOrThrow(Long id, String username) {
+        Artifact artifact = artifactRepository.findById(id)
                 .orElseThrow(() -> new ArtifactNotFoundException(id));
+        if (!artifact.getCreatedBy().equals(username)) {
+            throw new ArtifactNotFoundException(id);
+        }
+        return artifact;
     }
 
     public Optional<Artifact> getArtifactBySlug(String slug) {
@@ -96,22 +101,22 @@ public class ArtifactService {
         return artifactRepository.findBySlugAndStatus(slug, Artifact.Status.PUBLISHED);
     }
 
-    public Artifact updateArtifactOrThrow(Long id, String title, String sourceContent) {
-        Artifact artifact = getArtifactOrThrow(id);
+    public Artifact updateArtifactOrThrow(Long id, String title, String sourceContent, String username) {
+        Artifact artifact = getArtifactOrThrow(id, username);
         artifact.setTitle(title);
         artifact.setSourceContent(sourceContent);
         artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
         return artifactRepository.save(artifact);
     }
 
-    public Artifact updateArtifactStatusOrThrow(Long id, Artifact.Status status) {
-        Artifact artifact = getArtifactOrThrow(id);
+    public Artifact updateArtifactStatusOrThrow(Long id, Artifact.Status status, String username) {
+        Artifact artifact = getArtifactOrThrow(id, username);
         artifact.setStatus(status);
         return artifactRepository.save(artifact);
     }
 
-    public void deleteArtifactOrThrow(Long id) {
-        getArtifactOrThrow(id);
+    public void deleteArtifactOrThrow(Long id, String username) {
+        getArtifactOrThrow(id, username);
         artifactRepository.deleteById(id);
     }
 

@@ -1,11 +1,71 @@
-package com.chatpress.v1.artifact;
+package com.chatpress.v1.artifact.web;
+
+import com.chatpress.v1.artifact.Artifact;
 
 import org.springframework.stereotype.Component;
 
-@Component
-public class AdminMarkdownImportRenderer {
+import java.util.Locale;
 
-    public String render(String title, String errorMessage, String csrfToken) {
+@Component
+public class AdminArtifactFormRenderer {
+
+    public String render(String title, String sourceContent, String errorMessage, String csrfToken) {
+        return renderNew(title, sourceContent, errorMessage, csrfToken);
+    }
+
+    public String renderNew(String title, String sourceContent, String errorMessage, String csrfToken) {
+        return renderForm(
+                "New Artifact",
+                "New Artifact - Admin",
+                "/admin/artifacts",
+                "/admin/artifacts",
+                title,
+                sourceContent,
+                "published",
+                false,
+                errorMessage,
+                csrfToken
+        );
+    }
+
+    public String renderEdit(Artifact artifact, String errorMessage, String csrfToken) {
+        return renderEdit(
+                artifact.getId(),
+                artifact.getTitle(),
+                artifact.getSourceContent(),
+                artifact.getStatus().name().toLowerCase(Locale.ROOT),
+                errorMessage,
+                csrfToken
+        );
+    }
+
+    public String renderEdit(Long artifactId, String title, String sourceContent, String status, String errorMessage, String csrfToken) {
+        return renderForm(
+                "Edit Artifact",
+                "Edit Artifact - Admin",
+                "/admin/artifacts/" + artifactId,
+                "/admin/artifacts/" + artifactId,
+                title,
+                sourceContent,
+                normalizeStatus(status),
+                true,
+                errorMessage,
+                csrfToken
+        );
+    }
+
+    private String renderForm(
+            String pageHeading,
+            String pageTitle,
+            String formAction,
+            String cancelHref,
+            String title,
+            String sourceContent,
+            String status,
+            boolean showStatus,
+            String errorMessage,
+            String csrfToken
+    ) {
         return """
                 <!doctype html>
                 <html lang="en">
@@ -13,7 +73,7 @@ public class AdminMarkdownImportRenderer {
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
                     <link rel="icon" href="data:,">
-                    <title>Import Markdown - Admin</title>
+                    <title>%s</title>
                     <style>
                         body {
                             margin: 0;
@@ -29,7 +89,7 @@ public class AdminMarkdownImportRenderer {
                         }
 
                         .shell {
-                            max-width: 760px;
+                            max-width: 900px;
                             margin: 0 auto;
                             padding: 24px;
                         }
@@ -66,6 +126,8 @@ public class AdminMarkdownImportRenderer {
                         }
 
                         input,
+                        select,
+                        textarea,
                         button {
                             border: 1px solid #c9c6bd;
                             border-radius: 6px;
@@ -74,18 +136,24 @@ public class AdminMarkdownImportRenderer {
                             font: inherit;
                         }
 
-                        input {
+                        input,
+                        select,
+                        textarea {
                             width: 100%%;
                             box-sizing: border-box;
                             padding: 10px 12px;
                         }
 
-                        input[type="text"] {
+                        input,
+                        select {
                             height: 42px;
                         }
 
-                        input[type="file"] {
-                            min-height: 42px;
+                        textarea {
+                            min-height: 360px;
+                            resize: vertical;
+                            line-height: 1.6;
+                            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
                         }
 
                         .field {
@@ -120,34 +188,60 @@ public class AdminMarkdownImportRenderer {
                 <body>
                     <header>
                         <div class="shell topbar">
-                            <h1>Import Markdown</h1>
+                            <h1>%s</h1>
                             <a href="/admin/artifacts">Back to list</a>
                         </div>
                     </header>
                     <main class="shell">
                         %s
-                        <form method="post" action="/admin/artifacts/import/markdown" enctype="multipart/form-data">
+                        <form method="post" action="%s">
                             <input type="hidden" name="_csrf" value="%s">
                             <div class="field">
-                                <label for="file">Markdown file</label>
-                                <input id="file" name="file" type="file" accept=".md,text/markdown,text/plain" required>
+                                <label for="title">Title</label>
+                                <input id="title" name="title" value="%s" maxlength="200" required>
                             </div>
                             <div class="field">
-                                <label for="title">Title</label>
-                                <input id="title" name="title" value="%s" maxlength="200">
+                                <label for="sourceContent">Markdown</label>
+                                <textarea id="sourceContent" name="sourceContent" required>%s</textarea>
                             </div>
+                            %s
                             <div class="actions">
-                                <button type="submit">Import</button>
-                                <a href="/admin/artifacts">Cancel</a>
+                                <button type="submit">Save</button>
+                                <a href="%s">Cancel</a>
                             </div>
                         </form>
                     </main>
                 </body>
                 </html>
                 """.formatted(
+                escapeHtml(pageTitle),
+                escapeHtml(pageHeading),
                 renderError(errorMessage),
+                escapeHtml(formAction),
                 escapeHtml(csrfToken),
-                escapeHtml(title)
+                escapeHtml(title),
+                escapeHtml(sourceContent),
+                renderStatusField(status, showStatus),
+                escapeHtml(cancelHref)
+        );
+    }
+
+    private String renderStatusField(String status, boolean showStatus) {
+        if (!showStatus) {
+            return "";
+        }
+
+        return """
+                            <div class="field">
+                                <label for="status">Status</label>
+                                <select id="status" name="status" required>
+                                    <option value="published"%s>Published</option>
+                                    <option value="draft"%s>Draft</option>
+                                </select>
+                            </div>
+                """.formatted(
+                selected("published".equals(status)),
+                selected("draft".equals(status))
         );
     }
 
@@ -156,6 +250,17 @@ public class AdminMarkdownImportRenderer {
             return "";
         }
         return "<p class=\"error\">%s</p>".formatted(escapeHtml(errorMessage));
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "published";
+        }
+        return status.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String selected(boolean selected) {
+        return selected ? " selected" : "";
     }
 
     private String escapeHtml(String value) {

@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -698,6 +699,79 @@ class ArtifactControllerTest {
 
         mockMvc.perform(get("/p/draft-notes"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void userCannotAccessOtherUsersArtifact() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/artifacts")
+                        .with(csrf())
+                        .with(user("alice").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(artifactJson("Alice Notes", "# Alice Notes")))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(get("/api/artifacts/{id}", artifactId)
+                        .with(user("bob").roles("ADMIN")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ARTIFACT_NOT_FOUND"));
+    }
+
+    @Test
+    void userCannotEditOtherUsersArtifact() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/artifacts")
+                        .with(csrf())
+                        .with(user("alice").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(artifactJson("Alice Edit Notes", "# Alice Edit Notes")))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(put("/api/artifacts/{id}", artifactId)
+                        .with(csrf())
+                        .with(user("bob").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(artifactJson("Bob Tries Edit", "# Bob Tries Edit")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ARTIFACT_NOT_FOUND"));
+    }
+
+    @Test
+    void userCannotDeleteOtherUsersArtifact() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/artifacts")
+                        .with(csrf())
+                        .with(user("alice").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(artifactJson("Alice Delete Notes", "# Alice Delete Notes")))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Integer artifactId = artifactIdFrom(result);
+
+        mockMvc.perform(delete("/api/artifacts/{id}", artifactId)
+                        .with(csrf())
+                        .with(user("bob").roles("ADMIN")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ARTIFACT_NOT_FOUND"));
+    }
+
+    @Test
+    void userCannotListOtherUsersArtifacts() throws Exception {
+        mockMvc.perform(post("/api/artifacts")
+                        .with(csrf())
+                        .with(user("alice").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(artifactJson("Alice Private Notes", "# Alice Private Notes")))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/artifacts")
+                        .with(user("bob").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isEmpty());
     }
 
     private ResultActions createArtifact(

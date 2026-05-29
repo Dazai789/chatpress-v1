@@ -1,4 +1,4 @@
-package com.chatpress.v1.config;
+package com.chatpress.v1.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,7 @@
 package com.chatpress.v1.common;
 
-import com.chatpress.v1.auth.AuthenticationException;
+import com.chatpress.v1.auth.exception.AuthenticationException;
+import com.chatpress.v1.auth.exception.DuplicateUsernameException;
 import com.chatpress.v1.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.v1.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.v1.artifact.exception.InvalidMarkdownImportException;
@@ -26,6 +27,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiErrorResponse("UNAUTHORIZED", exception.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateUsernameException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateUsername(DuplicateUsernameException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiErrorResponse("DUPLICATE_USERNAME", exception.getMessage()));
     }
 
     @ExceptionHandler(ArtifactNotFoundException.class)

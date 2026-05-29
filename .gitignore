@@ -20,4 +20,4 @@ data/
 .env.*
 
 # Local AI working notes
-docs/IMPLEMENTATION_SPEC.md
+CLAUDE.md
