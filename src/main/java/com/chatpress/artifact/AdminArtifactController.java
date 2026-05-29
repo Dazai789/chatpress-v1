@@ -52,6 +52,13 @@ public class AdminArtifactController {
         this.adminMarkdownImportRenderer = adminMarkdownImportRenderer;
     }
 
+    @GetMapping(value = {"/admin", "/admin/"})
+    public ResponseEntity<Void> adminIndex() {
+        return ResponseEntity.status(303)
+                .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
+                .build();
+    }
+
     @GetMapping(value = "/admin/artifacts", produces = MediaType.TEXT_HTML_VALUE)
     public String listArtifacts(
             @RequestParam(defaultValue = "0") int page,

@@ -30,7 +30,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .formLogin(form -> form.permitAll())
+            .formLogin(form -> form
+                .permitAll()
+                .defaultSuccessUrl("/admin/artifacts", true)
+            )
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**", "/api/**")
             )
