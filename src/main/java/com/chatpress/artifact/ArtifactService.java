@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +32,7 @@ public class ArtifactService {
         this.markdownRenderer = markdownRenderer;
     }
 
+    @Transactional
     public Artifact createArtifact(String title, String sourceContent, String username) {
         String finalSlug = generateSlug(title);
 
@@ -39,6 +41,7 @@ public class ArtifactService {
         return artifactRepository.save(artifact);
     }
 
+    @Transactional
     public Artifact importMarkdownFile(MultipartFile file, String title, String username) {
         validateMarkdownFile(file);
 
@@ -101,6 +104,7 @@ public class ArtifactService {
         return artifactRepository.findBySlugAndStatus(slug, Artifact.Status.PUBLISHED);
     }
 
+    @Transactional
     public Artifact updateArtifactOrThrow(Long id, String title, String sourceContent, String username) {
         Artifact artifact = getArtifactOrThrow(id, username);
         artifact.setTitle(title);
@@ -109,12 +113,14 @@ public class ArtifactService {
         return artifactRepository.save(artifact);
     }
 
+    @Transactional
     public Artifact updateArtifactStatusOrThrow(Long id, Artifact.Status status, String username) {
         Artifact artifact = getArtifactOrThrow(id, username);
         artifact.setStatus(status);
         return artifactRepository.save(artifact);
     }
 
+    @Transactional
     public void deleteArtifactOrThrow(Long id, String username) {
         getArtifactOrThrow(id, username);
         artifactRepository.deleteById(id);

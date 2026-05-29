@@ -5,6 +5,7 @@ import com.chatpress.auth.exception.DuplicateUsernameException;
 import com.chatpress.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.artifact.exception.InvalidMarkdownImportException;
+import com.chatpress.common.exception.RateLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -33,6 +34,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleDuplicateUsername(DuplicateUsernameException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiErrorResponse("DUPLICATE_USERNAME", exception.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimitExceeded(RateLimitExceededException exception) {
+        return ResponseEntity.status(429)
+                .body(new ApiErrorResponse("RATE_LIMITED", exception.getMessage()));
     }
 
     @ExceptionHandler(ArtifactNotFoundException.class)

@@ -9,8 +9,13 @@ import com.chatpress.artifact.renderer.AdminMarkdownImportRenderer;
 import com.chatpress.artifact.Artifact;
 import com.chatpress.artifact.ArtifactService;
 import com.chatpress.artifact.exception.InvalidMarkdownImportException;
+import com.chatpress.common.AdminLogRenderer;
+import com.chatpress.common.OperationLog;
+import com.chatpress.common.OperationLogRepository;
+import com.chatpress.common.annotation.LogOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +40,8 @@ public class AdminArtifactController {
     private final AdminDetailRenderer adminDetailRenderer;
     private final AdminDeleteRenderer adminDeleteRenderer;
     private final AdminMarkdownImportRenderer adminMarkdownImportRenderer;
+    private final AdminLogRenderer adminLogRenderer;
+    private final OperationLogRepository operationLogRepository;
 
     public AdminArtifactController(
             ArtifactService artifactService,
@@ -42,7 +49,9 @@ public class AdminArtifactController {
             AdminFormRenderer adminFormRenderer,
             AdminDetailRenderer adminDetailRenderer,
             AdminDeleteRenderer adminDeleteRenderer,
-            AdminMarkdownImportRenderer adminMarkdownImportRenderer
+            AdminMarkdownImportRenderer adminMarkdownImportRenderer,
+            AdminLogRenderer adminLogRenderer,
+            OperationLogRepository operationLogRepository
     ) {
         this.artifactService = artifactService;
         this.adminPageRenderer = adminPageRenderer;
@@ -50,6 +59,8 @@ public class AdminArtifactController {
         this.adminDetailRenderer = adminDetailRenderer;
         this.adminDeleteRenderer = adminDeleteRenderer;
         this.adminMarkdownImportRenderer = adminMarkdownImportRenderer;
+        this.adminLogRenderer = adminLogRenderer;
+        this.operationLogRepository = operationLogRepository;
     }
 
     @GetMapping(value = {"/admin", "/admin/"})
@@ -57,6 +68,16 @@ public class AdminArtifactController {
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
+    }
+
+    @GetMapping(value = "/admin/logs", produces = MediaType.TEXT_HTML_VALUE)
+    public String listLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<OperationLog> logs = operationLogRepository.findAllByOrderByCreatedAtDesc(
+                PageRequest.of(page, size));
+        return adminLogRenderer.render(logs);
     }
 
     @GetMapping(value = "/admin/artifacts", produces = MediaType.TEXT_HTML_VALUE)
@@ -98,6 +119,7 @@ public class AdminArtifactController {
         return adminDeleteRenderer.render(artifact, csrfToken(request));
     }
 
+    @LogOperation("CREATE_ARTIFACT")
     @PostMapping(
             value = "/admin/artifacts",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
@@ -124,6 +146,7 @@ public class AdminArtifactController {
                 .build();
     }
 
+    @LogOperation("IMPORT_MARKDOWN")
     @PostMapping(
             value = "/admin/artifacts/import/markdown",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -145,6 +168,7 @@ public class AdminArtifactController {
         }
     }
 
+    @LogOperation("UPDATE_ARTIFACT")
     @PostMapping(
             value = "/admin/artifacts/{id}",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
@@ -189,6 +213,7 @@ public class AdminArtifactController {
                 .build();
     }
 
+    @LogOperation("DELETE_ARTIFACT")
     @PostMapping(
             value = "/admin/artifacts/{id}/delete",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE

@@ -251,6 +251,7 @@ public class AdminPageRenderer {
                         <div class="shell topbar">
                             <h1>Artifacts</h1>
                             <div class="topbar-actions">
+                                <a class="secondary-link" href="/admin/logs">Logs</a>
                                 <a class="secondary-link" href="/admin/artifacts/import/markdown">Import</a>
                                 <a class="button-link" href="/admin/artifacts/new">New</a>
                             </div>

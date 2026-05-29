@@ -9,6 +9,7 @@ import com.chatpress.security.JwtUtil;
 import com.chatpress.auth.User;
 import com.chatpress.auth.UserRepository;
 
+import com.chatpress.common.annotation.RateLimit;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +36,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    @RateLimit(maxRequests = 5, windowSeconds = 60)
     @PostMapping("/register")
     public Map<String, Object> register(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.findByUsername(request.username()).isPresent()) {
@@ -55,6 +57,7 @@ public class AuthController {
         );
     }
 
+    @RateLimit(maxRequests = 10, windowSeconds = 60)
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
