@@ -939,6 +939,32 @@ class ArtifactControllerTest {
         assertThat(cached).isNull();
     }
 
+    @Test
+    void publicListPageShowsPublishedArticles() throws Exception {
+        createArtifact("Public List One", "# One").andExpect(status().isCreated());
+
+        // Create an article and set it to draft
+        MvcResult draftResult = createArtifact("Public Draft Two", "# Draft")
+                .andExpect(status().isCreated())
+                .andReturn();
+        Integer draftId = artifactIdFrom(draftResult);
+        mockMvc.perform(put("/api/artifacts/{id}/status", draftId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusJson("draft")))
+                .andExpect(status().isOk());
+
+        // Public list should only show published
+        mockMvc.perform(get("/p"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<title>ChatPress</title>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Public List One")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("Public Draft Two")
+                )));
+    }
+
     private ResultActions createArtifact(
             String title,
             String sourceContent
