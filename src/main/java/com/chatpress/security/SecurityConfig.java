@@ -27,7 +27,7 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/p/**", "/api/health", "/h2-console/**", "/api/auth/**").permitAll()
+                .requestMatchers("/", "/p/**", "/api/health", "/h2-console/**", "/api/auth/**", "/swagger", "/swagger/**", "/api/docs", "/api/docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/admin/**").authenticated()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
