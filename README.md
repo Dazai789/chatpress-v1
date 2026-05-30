@@ -40,12 +40,13 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 - **Docker**（多阶段构建 + docker-compose MySQL + Redis）。
 - **GitHub Actions CI**（push 自动跑 `mvn test`）。
 - MySQL profile + Flyway V1-V6（迁移语法已通过 MySQL 兼容验证，docker-compose 一键部署）。
-- MockMvc 测试（81 个全部通过）。
+- **MyBatis-Plus**（与 JPA 共存，复杂多条件联表查询手写 SQL）。
+- MockMvc 测试（82 个全部通过）。
 
 ## 技术栈
 
 - Java 21 / Spring Boot 3.5.14 / Maven
-- Spring MVC / Spring Data JPA / Spring Security / Spring AOP
+- Spring MVC / Spring Data JPA / MyBatis-Plus / Spring Security / Spring AOP
 - H2（默认）/ MySQL profile
 - Flyway / Bean Validation
 - CommonMark 及扩展（表格、任务列表、删除线、自动链接）
