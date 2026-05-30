@@ -2,6 +2,9 @@ package com.chatpress.auth;
 
 import java.time.LocalDateTime;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +16,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
+@TableName("users")
 public class User {
 
     @Id
@@ -28,9 +32,11 @@ public class User {
     @Column(nullable = false, length = 50)
     private String role;
 
+    @TableField(fill = FieldFill.INSERT)
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 

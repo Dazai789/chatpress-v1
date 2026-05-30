@@ -20,7 +20,7 @@ class ArtifactServiceTransactionTest {
     private ArtifactService artifactService;
 
     @Autowired
-    private ArtifactRepository artifactRepository;
+    private ArtifactMapper artifactMapper;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -29,7 +29,7 @@ class ArtifactServiceTransactionTest {
     void createArtifactIsCommitted() {
         Artifact artifact = artifactService.createArtifact("Tx Test", "# Tx Test", null, "tester");
 
-        Artifact found = artifactRepository.findById(artifact.getId()).orElseThrow();
+        Artifact found = artifactMapper.selectById(artifact.getId());
         assertThat(found.getTitle()).isEqualTo("Tx Test");
     }
 
@@ -40,20 +40,20 @@ class ArtifactServiceTransactionTest {
         Artifact artifact = new Artifact(
                 "Rollback Test", "rollback-test", "# Rollback", "<p>Rollback</p>", "tester"
         );
-        artifactRepository.save(artifact);
+        artifactMapper.insert(artifact);
 
         transactionManager.rollback(tx);
 
-        assertThat(artifactRepository.findBySlug("rollback-test")).isEmpty();
+        assertThat(artifactMapper.findBySlug("rollback-test")).isEmpty();
     }
 
     @Test
     void slugUniqueConstraintPreventsDuplicate() {
         Artifact first = new Artifact("Dup Slug", "dup-slug", "# Dup", "<p>Dup</p>", "tester");
-        artifactRepository.save(first);
+        artifactMapper.insert(first);
 
         Artifact second = new Artifact("Dup Slug 2", "dup-slug", "# Dup 2", "<p>Dup 2</p>", "tester");
-        assertThatThrownBy(() -> artifactRepository.save(second))
+        assertThatThrownBy(() -> artifactMapper.insert(second))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -64,7 +64,7 @@ class ArtifactServiceTransactionTest {
 
         artifactService.deleteArtifactOrThrow(id, "tester");
 
-        assertThat(artifactRepository.findById(id)).isEmpty();
+        assertThat(artifactMapper.selectById(id)).isNull();
     }
 
     @Test
@@ -72,6 +72,6 @@ class ArtifactServiceTransactionTest {
         artifactService.createArtifact("Index Test", "# Index Test", null, "tester");
 
         var results = artifactService.listArtifacts(0, 10, "Index", "published", null, "tester");
-        assertThat(results.getTotalElements()).isEqualTo(1);
+        assertThat(results.getTotal()).isEqualTo(1);
     }
 }

@@ -5,24 +5,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.chatpress.auth.User;
-import com.chatpress.auth.UserRepository;
+import com.chatpress.auth.UserMapper;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public DataInitializer(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) {
-        if (userRepository.findByUsername("admin").isEmpty()) {
+        if (userMapper.findByUsername("admin").isEmpty()) {
             User admin = new User("admin", passwordEncoder.encode("admin123"), "ADMIN");
-            userRepository.save(admin);
+            userMapper.insert(admin);
         }
     }
 }

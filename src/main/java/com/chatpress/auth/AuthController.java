@@ -7,7 +7,7 @@ import com.chatpress.auth.exception.AuthenticationException;
 import com.chatpress.auth.exception.DuplicateUsernameException;
 import com.chatpress.security.JwtUtil;
 import com.chatpress.auth.User;
-import com.chatpress.auth.UserRepository;
+import com.chatpress.auth.UserMapper;
 
 import com.chatpress.common.annotation.RateLimit;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,14 +24,14 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public AuthController(UserRepository userRepository,
+    public AuthController(UserMapper userMapper,
                           PasswordEncoder passwordEncoder,
                           JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
@@ -39,7 +39,7 @@ public class AuthController {
     @RateLimit(maxRequests = 5, windowSeconds = 60)
     @PostMapping("/register")
     public Map<String, Object> register(@Valid @RequestBody RegisterRequest request) {
-        if (userRepository.findByUsername(request.username()).isPresent()) {
+        if (userMapper.findByUsername(request.username()).isPresent()) {
             throw new DuplicateUsernameException(request.username());
         }
 
@@ -48,7 +48,7 @@ public class AuthController {
                 passwordEncoder.encode(request.password()),
                 "USER"
         );
-        user = userRepository.save(user);
+        userMapper.insert(user);
 
         return Map.of(
                 "id", user.getId(),
@@ -60,7 +60,7 @@ public class AuthController {
     @RateLimit(maxRequests = 10, windowSeconds = 60)
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-        User user = userRepository.findByUsername(request.username())
+        User user = userMapper.findByUsername(request.username())
                 .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {

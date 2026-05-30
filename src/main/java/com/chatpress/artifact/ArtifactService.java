@@ -1,13 +1,10 @@
 package com.chatpress.artifact;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chatpress.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.artifact.exception.InvalidArtifactQueryException;
 import com.chatpress.artifact.exception.InvalidMarkdownImportException;
-import jakarta.persistence.criteria.Join;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,18 +25,18 @@ public class ArtifactService {
     private static final int MAX_TITLE_LENGTH = 200;
     private static final int MAX_PAGE_SIZE = 100;
 
-    private final ArtifactRepository artifactRepository;
+    private final ArtifactMapper artifactMapper;
     private final TagRepository tagRepository;
     private final MarkdownRenderer markdownRenderer;
     private final PublicPageCache publicPageCache;
     private final AsyncTaskService asyncTaskService;
 
-    public ArtifactService(ArtifactRepository artifactRepository,
+    public ArtifactService(ArtifactMapper artifactMapper,
                            TagRepository tagRepository,
                            MarkdownRenderer markdownRenderer,
                            PublicPageCache publicPageCache,
                            AsyncTaskService asyncTaskService) {
-        this.artifactRepository = artifactRepository;
+        this.artifactMapper = artifactMapper;
         this.tagRepository = tagRepository;
         this.markdownRenderer = markdownRenderer;
         this.publicPageCache = publicPageCache;
@@ -53,9 +50,9 @@ public class ArtifactService {
         Artifact artifact = new Artifact(title, finalSlug, sourceContent, markdownRenderer.render(sourceContent), username);
         artifact.setStatus(Artifact.Status.PUBLISHED);
         artifact.setTags(resolveTags(tagNames));
-        Artifact saved = artifactRepository.save(artifact);
-        asyncTaskService.afterPublish(saved.getSlug(), saved.getTitle(), saved.getSourceContent());
-        return saved;
+        artifactMapper.insert(artifact);
+        asyncTaskService.afterPublish(artifact.getSlug(), artifact.getTitle(), artifact.getSourceContent());
+        return artifact;
     }
 
     @Transactional
@@ -74,49 +71,27 @@ public class ArtifactService {
         return createArtifact(finalTitle, sourceContent, null, username);
     }
 
-    public Page<Artifact> listArtifacts(int page, int size, String q, String status, String tag, String username) {
-        PageRequest pageRequest = PageRequest.of(
-                normalizePage(page),
-                normalizePageSize(size),
-                Sort.by(Sort.Direction.DESC, "createdAt")
-        );
-
-        Specification<Artifact> specification = (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("createdBy"), username);
+    public IPage<Artifact> listArtifacts(int page, int size, String q, String status, String tag, String username) {
+        var pageReq = new Page<Artifact>(normalizePage(page) + 1, normalizePageSize(size)); // MyBatis-Plus pages start at 1
 
         Optional<String> keyword = normalizeSearchKeyword(q);
-        if (keyword.isPresent()) {
-            String lowerPattern = "%" + keyword.get().toLowerCase(Locale.ROOT) + "%";
-            String rawPattern = "%" + keyword.get() + "%";
-            specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.or(
-                            criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), lowerPattern),
-                            criteriaBuilder.like(root.get("sourceContent"), rawPattern)
-                    )
-            );
-        }
-
         Optional<String> tagFilter = normalizeSearchKeyword(tag);
-        if (tagFilter.isPresent()) {
-            specification = specification.and((root, query, criteriaBuilder) -> {
-                Join<Artifact, Tag> tagJoin = root.join("tags");
-                return criteriaBuilder.equal(tagJoin.get("name"), tagFilter.get().toLowerCase(Locale.ROOT));
-            });
-        }
+        String statusValue = parseStatus(status).map(s -> s.name()).orElse(null);
 
-        Optional<Artifact.Status> artifactStatus = parseStatus(status);
-        if (artifactStatus.isPresent()) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("status"), artifactStatus.get())
-            );
-        }
-
-        return artifactRepository.findAll(specification, pageRequest);
+        return artifactMapper.searchArtifacts(
+                pageReq,
+                username,
+                keyword.orElse(null),
+                tagFilter.orElse(null),
+                statusValue
+        );
     }
 
     public Artifact getArtifactOrThrow(Long id, String username) {
-        Artifact artifact = artifactRepository.findById(id)
-                .orElseThrow(() -> new ArtifactNotFoundException(id));
+        Artifact artifact = artifactMapper.selectById(id);
+        if (artifact == null) {
+            throw new ArtifactNotFoundException(id);
+        }
         if (!artifact.getCreatedBy().equals(username)) {
             throw new ArtifactNotFoundException(id);
         }
@@ -124,11 +99,11 @@ public class ArtifactService {
     }
 
     public Optional<Artifact> getArtifactBySlug(String slug) {
-        return artifactRepository.findBySlug(slug);
+        return artifactMapper.findBySlug(slug);
     }
 
     public Optional<Artifact> getPublishedArtifactBySlug(String slug) {
-        return artifactRepository.findBySlugAndStatus(slug, Artifact.Status.PUBLISHED);
+        return artifactMapper.findBySlugAndStatus(slug, Artifact.Status.PUBLISHED.name());
     }
 
     @Transactional
@@ -138,18 +113,18 @@ public class ArtifactService {
         artifact.setSourceContent(sourceContent);
         artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
         artifact.setTags(resolveTags(tagNames));
-        Artifact saved = artifactRepository.save(artifact);
-        publicPageCache.evict(saved.getSlug());
-        return saved;
+        artifactMapper.updateById(artifact);
+        publicPageCache.evict(artifact.getSlug());
+        return artifact;
     }
 
     @Transactional
     public Artifact updateArtifactStatusOrThrow(Long id, Artifact.Status status, String username) {
         Artifact artifact = getArtifactOrThrow(id, username);
         artifact.setStatus(status);
-        Artifact saved = artifactRepository.save(artifact);
-        publicPageCache.evict(saved.getSlug());
-        return saved;
+        artifactMapper.updateById(artifact);
+        publicPageCache.evict(artifact.getSlug());
+        return artifact;
     }
 
     @Transactional
@@ -160,23 +135,22 @@ public class ArtifactService {
         artifact.setRenderedHtml(markdownRenderer.render(sourceContent));
         artifact.setStatus(status);
         artifact.setTags(resolveTags(tagNames));
-        Artifact saved = artifactRepository.save(artifact);
-        publicPageCache.evict(saved.getSlug());
-        return saved;
+        artifactMapper.updateById(artifact);
+        publicPageCache.evict(artifact.getSlug());
+        return artifact;
     }
 
     @Transactional
     public void deleteArtifactOrThrow(Long id, String username) {
         Artifact artifact = getArtifactOrThrow(id, username);
         publicPageCache.evict(artifact.getSlug());
-        artifactRepository.deleteById(id);
+        artifactMapper.deleteById(id);
     }
 
     private String generateSlug(String title) {
         String baseSlug = slugifyTitle(title);
 
-        // Single query to find all existing slugs with the same base prefix
-        var existingSlugs = artifactRepository.findSlugsByPrefix(baseSlug);
+        var existingSlugs = artifactMapper.findSlugsByPrefix(baseSlug);
 
         if (!existingSlugs.contains(baseSlug)) {
             return baseSlug;

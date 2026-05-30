@@ -1,5 +1,8 @@
 package com.chatpress.artifact;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,15 +65,18 @@ public class Artifact {
     @Column(nullable = false, length = 50)
     private Status status = Status.DRAFT;
 
+    @TableField(fill = FieldFill.INSERT)
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false, length = 50)
     private String createdBy;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @TableField(exist = false)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "artifact_tag",

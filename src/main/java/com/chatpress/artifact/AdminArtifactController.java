@@ -97,7 +97,12 @@ public class AdminArtifactController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String tag
     ) {
-        Page<Artifact> artifacts = artifactService.listArtifacts(page, size, q, status, tag, SecurityUtils.currentUsername());
+        var result = artifactService.listArtifacts(page, size, q, status, tag, SecurityUtils.currentUsername());
+        var artifacts = new org.springframework.data.domain.PageImpl<>(
+                result.getRecords(),
+                org.springframework.data.domain.PageRequest.of(page, size),
+                result.getTotal()
+        );
         return adminPageRenderer.render(artifacts, q, status, tag);
     }
 

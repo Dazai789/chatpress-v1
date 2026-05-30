@@ -18,18 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublicPageController {
 
     private final ArtifactService artifactService;
-    private final ArtifactRepository artifactRepository;
+    private final ArtifactMapper artifactMapper;
     private final PublicPageRenderer publicPageRenderer;
     private final PublicListRenderer publicListRenderer;
     private final PublicPageCache cache;
 
     public PublicPageController(ArtifactService artifactService,
-                                ArtifactRepository artifactRepository,
+                                ArtifactMapper artifactMapper,
                                 PublicPageRenderer publicPageRenderer,
                                 PublicListRenderer publicListRenderer,
                                 PublicPageCache cache) {
         this.artifactService = artifactService;
-        this.artifactRepository = artifactRepository;
+        this.artifactMapper = artifactMapper;
         this.publicPageRenderer = publicPageRenderer;
         this.publicListRenderer = publicListRenderer;
         this.cache = cache;
@@ -38,9 +38,13 @@ public class PublicPageController {
     @GetMapping(value = "/p", produces = MediaType.TEXT_HTML_VALUE)
     public String listPublished(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size) {
-        Page<Artifact> artifacts = artifactRepository.findByStatusOrderByCreatedAtDesc(
-                Artifact.Status.PUBLISHED,
-                PageRequest.of(page, size));
+        var result = artifactMapper.findPublishedByPage(
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<Artifact>(page + 1, size)); // MyBatis-Plus 1-based
+        var artifacts = new org.springframework.data.domain.PageImpl<>(
+                result.getRecords(),
+                org.springframework.data.domain.PageRequest.of(page, size),
+                result.getTotal()
+        );
         return publicListRenderer.render(artifacts);
     }
 

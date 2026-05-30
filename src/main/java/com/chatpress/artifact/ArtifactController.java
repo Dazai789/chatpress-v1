@@ -66,10 +66,9 @@ public class ArtifactController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String tag
     ) {
-        return ArtifactPageResponse.from(
-                artifactService.listArtifacts(page, size, q, status, tag, SecurityUtils.currentUsername())
-                        .map(ArtifactSummaryResponse::from)
-        );
+        var result = artifactService.listArtifacts(page, size, q, status, tag, SecurityUtils.currentUsername());
+        var items = result.getRecords().stream().map(ArtifactSummaryResponse::from).toList();
+        return new ArtifactPageResponse<>(items, page, size, result.getTotal(), (int) result.getPages());
     }
 
     @GetMapping("/{id}")

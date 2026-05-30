@@ -228,7 +228,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(get("/api/artifacts/{id}", artifactId))
                 .andExpect(status().isOk())
@@ -290,7 +290,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer draftArtifactId = artifactIdFrom(draftResult);
+        Long draftArtifactId = artifactIdFrom(draftResult);
 
         mockMvc.perform(put("/api/artifacts/{id}/status", draftArtifactId)
                         .with(csrf())
@@ -322,7 +322,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(put("/api/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -343,7 +343,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(put("/api/artifacts/{id}/status", artifactId)
                         .with(csrf())
@@ -360,7 +360,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(delete("/api/artifacts/{id}", artifactId)
                         .with(csrf()))
@@ -394,7 +394,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer draftArtifactId = artifactIdFrom(draftResult);
+        Long draftArtifactId = artifactIdFrom(draftResult);
 
         mockMvc.perform(put("/api/artifacts/{id}/status", draftArtifactId)
                         .with(csrf())
@@ -516,7 +516,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(get("/admin/artifacts/{id}", artifactId))
                 .andExpect(status().isOk())
@@ -538,7 +538,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(get("/admin/artifacts/{id}/delete", artifactId))
                 .andExpect(status().isOk())
@@ -558,7 +558,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(post("/admin/artifacts/{id}/delete", artifactId)
                         .with(csrf())
@@ -577,7 +577,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(get("/admin/artifacts/{id}/edit", artifactId))
                 .andExpect(status().isOk())
@@ -597,7 +597,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -622,7 +622,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -642,7 +642,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(post("/admin/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -698,7 +698,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(put("/api/artifacts/{id}/status", artifactId)
                         .with(csrf())
@@ -720,7 +720,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(get("/api/artifacts/{id}", artifactId)
                         .with(user("bob").roles("ADMIN")))
@@ -738,7 +738,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(put("/api/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -759,7 +759,7 @@ class ArtifactControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         mockMvc.perform(delete("/api/artifacts/{id}", artifactId)
                         .with(csrf())
@@ -810,7 +810,7 @@ class ArtifactControllerTest {
         MvcResult result = createArtifact("OpLog Delete Test", "# OpLog Delete Test")
                 .andExpect(status().isCreated())
                 .andReturn();
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         long before = operationLogRepository.count();
 
@@ -875,7 +875,7 @@ class ArtifactControllerTest {
         MvcResult result = createArtifact("Cache Update", "# Before Update")
                 .andExpect(status().isCreated())
                 .andReturn();
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         // Populate cache
         mockMvc.perform(get("/p/cache-update"))
@@ -900,7 +900,7 @@ class ArtifactControllerTest {
         MvcResult result = createArtifact("Cache Delete", "# Delete Me")
                 .andExpect(status().isCreated())
                 .andReturn();
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         // Populate cache
         mockMvc.perform(get("/p/cache-delete"))
@@ -921,7 +921,7 @@ class ArtifactControllerTest {
         MvcResult result = createArtifact("Draft Cache Test", "# Draft Cache")
                 .andExpect(status().isCreated())
                 .andReturn();
-        Integer artifactId = artifactIdFrom(result);
+        Long artifactId = artifactIdFrom(result);
 
         // Set to draft
         mockMvc.perform(put("/api/artifacts/{id}/status", artifactId)
@@ -947,7 +947,7 @@ class ArtifactControllerTest {
         MvcResult draftResult = createArtifact("Public Draft Two", "# Draft")
                 .andExpect(status().isCreated())
                 .andReturn();
-        Integer draftId = artifactIdFrom(draftResult);
+        Long draftId = artifactIdFrom(draftResult);
         mockMvc.perform(put("/api/artifacts/{id}/status", draftId)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -995,7 +995,8 @@ class ArtifactControllerTest {
         );
     }
 
-    private Integer artifactIdFrom(MvcResult result) throws Exception {
-        return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+    private Long artifactIdFrom(MvcResult result) throws Exception {
+        Object id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        return id instanceof Integer ? ((Integer) id).longValue() : (Long) id;
     }
 }

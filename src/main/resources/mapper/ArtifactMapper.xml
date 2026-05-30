@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chatpress.artifact.ArtifactMapper">
+
+    <!-- Result map: maps DB columns to Artifact fields (snake_case → camelCase is automatic) -->
+    <resultMap id="artifactMap" type="com.chatpress.artifact.Artifact">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="slug" column="slug"/>
+        <result property="sourceFormat" column="source_format"/>
+        <result property="sourceContent" column="source_content"/>
+        <result property="renderedHtml" column="rendered_html"/>
+        <result property="status" column="status"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="tags" ofType="com.chatpress.artifact.Tag"
+                    select="selectTagsByArtifactId" column="id"/>
+    </resultMap>
+
+    <resultMap id="tagMap" type="com.chatpress.artifact.Tag">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+    </resultMap>
+
+    <select id="selectTagsByArtifactId" resultMap="tagMap">
+        SELECT t.id, t.name
+        FROM tag t
+        INNER JOIN artifact_tag at ON t.id = at.tag_id
+        WHERE at.artifact_id = #{id}
+    </select>
+
+    <select id="findBySlug" resultMap="artifactMap">
+        SELECT * FROM artifact WHERE slug = #{slug}
+    </select>
+
+    <select id="findBySlugAndStatus" resultMap="artifactMap">
+        SELECT * FROM artifact WHERE slug = #{slug} AND status = #{status}
+    </select>
+
+    <select id="findSlugsByPrefix" resultType="string">
+        SELECT slug FROM artifact WHERE slug LIKE CONCAT(#{prefix}, '%')
+    </select>
+
+    <select id="findPublishedByPage" resultMap="artifactMap">
+        SELECT * FROM artifact WHERE status = 'PUBLISHED' ORDER BY created_at DESC
+    </select>
+
+    <!--
+        Complex search query — interview showcase.
+        Dynamically builds WHERE clauses based on optional filters:
+          - username: always filtered (user data isolation)
+          - keyword: searches title (case-insensitive) and source_content
+          - tag: joins through artifact_tag → tag, filters by tag name
+          - status: filters by draft/published
+        DISTINCT prevents duplicates when JOINing with artifact_tag.
+        Pagination is handled by MyBatis-Plus IPage parameter.
+    -->
+    <select id="searchArtifacts" resultMap="artifactMap">
+        SELECT DISTINCT a.id, a.title, a.slug, a.source_format,
+               a.source_content, a.rendered_html, a.status,
+               a.created_by, a.created_at, a.updated_at
+        FROM artifact a
+        <if test="tag != null and tag != ''">
+            INNER JOIN artifact_tag at ON a.id = at.artifact_id
+            INNER JOIN tag t ON at.tag_id = t.id
+        </if>
+        <where>
+            <if test="username != null and username != ''">
+                AND a.created_by = #{username}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(a.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+                     OR a.source_content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="tag != null and tag != ''">
+                AND LOWER(t.name) = LOWER(#{tag})
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        ORDER BY a.created_at DESC
+    </select>
+
+</mapper>
