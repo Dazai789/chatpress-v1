@@ -15,6 +15,7 @@ public class PublicPageRenderer {
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
                     <title>%s</title>
                     <style>
                         body {
@@ -161,6 +162,8 @@ public class PublicPageRenderer {
                     <main>
                         %s
                     </main>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+                    <script>hljs.highlightAll();</script>
                 </body>
                 </html>
                 """.formatted(HtmlUtils.escapeHtml(artifact.getTitle()), artifact.getRenderedHtml());

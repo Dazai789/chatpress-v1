@@ -19,7 +19,8 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 - Markdown 文件导入和渲染，HTML 安全过滤（XSS 防护）。
 - slug 自动生成和唯一性处理。
 - draft / published 状态控制。
-- `/p/{slug}` 公开页面。
+- `/p` 公开知识库首页（文章卡片 + 分页）+ `/p/{slug}` 文章页（代码语法高亮）。
+- 后台 Markdown 编辑器实时预览（marked.js）。
 - 后台列表、新建、详情、编辑、删除确认、导入页面和操作日志页。
 - User 表、BCrypt 密码加密。
 - 注册 / 登录 API + JWT 认证（Bearer token + 表单登录并存）。

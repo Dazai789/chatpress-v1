@@ -212,6 +212,10 @@ public class AdminFormRenderer {
                                 <label for="sourceContent">Markdown</label>
                                 <textarea id="sourceContent" name="sourceContent" required>%s</textarea>
                             </div>
+                            <div class="field" style="margin-bottom:8px">
+                                <button type="button" id="previewBtn" onclick="togglePreview()" style="width:auto;height:34px;padding:0 14px;background:#eeece4;color:#4a4a4a;border-color:#c9c6bd;">Preview</button>
+                            </div>
+                            <div id="preview" style="display:none;padding:16px;border:1px solid #dedbd2;border-radius:6px;background:#fff;margin-bottom:18px;overflow-x:auto;"></div>
                             <div class="field">
                                 <label for="tags">Tags (comma-separated)</label>
                                 <input id="tags" name="tags" value="%s" maxlength="200" placeholder="e.g. java, spring, tutorial">
@@ -223,6 +227,24 @@ public class AdminFormRenderer {
                             </div>
                         </form>
                     </main>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js"></script>
+                    <script>
+                    let previewOn = false;
+                    function togglePreview() {
+                        previewOn = !previewOn;
+                        var btn = document.getElementById('previewBtn');
+                        var preview = document.getElementById('preview');
+                        if (previewOn) {
+                            var md = document.getElementById('sourceContent').value;
+                            preview.innerHTML = marked.parse(md);
+                            preview.style.display = 'block';
+                            btn.textContent = 'Edit';
+                        } else {
+                            preview.style.display = 'none';
+                            btn.textContent = 'Preview';
+                        }
+                    }
+                    </script>
                 </body>
                 </html>
                 """.formatted(

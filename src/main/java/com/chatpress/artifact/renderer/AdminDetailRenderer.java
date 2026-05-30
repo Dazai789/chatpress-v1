@@ -23,6 +23,7 @@ public class AdminDetailRenderer {
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
                     <link rel="icon" href="data:,">
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
                     <title>%s - Admin</title>
                     <style>
                         body {
@@ -232,6 +233,8 @@ public class AdminDetailRenderer {
                             %s
                         </div>
                     </main>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+                    <script>hljs.highlightAll();</script>
                 </body>
                 </html>
                 """.formatted(
