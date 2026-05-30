@@ -36,11 +36,12 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 - **公开页缓存**（Redis Cache-Aside，更新/删除时自动失效，测试环境内存缓存）。
 - **Swagger API 文档**（`/swagger` UI + `/api/docs` JSON）。
 - **异步线程池**（ThreadPoolTaskExecutor，发布后异步统计，异常日志）。
+- **Docker**（多阶段构建 + docker-compose MySQL + Redis）。
+- **GitHub Actions CI**（push 自动跑 `mvn test`）。
 - MockMvc 测试（81 个全部通过）。
 
 ## 欠缺能力
 
-- Docker / CI。
 - MySQL 实跑验证。
 
 ## 技术栈
@@ -75,7 +76,20 @@ POST /api/auth/login
 POST /api/auth/register
 ```
 
-完整接口见 API 参考。
+完整接口见 API 参考。Swagger UI 在 `/swagger`。
+
+## 快速启动
+
+```bash
+# 本地开发（H2，无需外部依赖）
+mvn spring-boot:run
+
+# Docker 一键启动（MySQL + Redis + App）
+docker compose up -d
+
+# 仅跑测试
+mvn test
+```
 
 ## 文档
 
