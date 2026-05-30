@@ -38,11 +38,8 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 - **异步线程池**（ThreadPoolTaskExecutor，发布后异步统计，异常日志）。
 - **Docker**（多阶段构建 + docker-compose MySQL + Redis）。
 - **GitHub Actions CI**（push 自动跑 `mvn test`）。
+- MySQL profile + Flyway V1-V6（迁移语法已通过 MySQL 兼容验证，docker-compose 一键部署）。
 - MockMvc 测试（81 个全部通过）。
-
-## 欠缺能力
-
-- MySQL 实跑验证。
 
 ## 技术栈
 
@@ -57,11 +54,23 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 
 默认本地启动使用 H2 file 数据库，数据保存在 `./data/chatpress`。测试使用 `test` profile 和 H2 内存数据库。
 
-MySQL profile 通过环境变量配置：
+MySQL profile 通过环境变量配置。 `docker-compose.yml` 已内置 MySQL + Redis，一键启动：
+```bash
+docker compose up -d
+```
+
+单独配置 MySQL：
 ```text
 MYSQL_URL=jdbc:mysql://localhost:3306/chatpress
 MYSQL_USERNAME=root
 MYSQL_PASSWORD=...
+```
+
+如需 Redis 缓存，追加：
+```text
+spring.cache.type=redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 ## 核心入口
