@@ -1,5 +1,6 @@
 package com.chatpress.common;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -25,6 +26,14 @@ public class RateLimiter {
         });
 
         return state.count <= maxRequests;
+    }
+
+    @Scheduled(fixedRate = 300_000)
+    public void cleanExpiredWindows() {
+        long now = System.currentTimeMillis();
+        long maxWindowMs = 120_000; // 2 minutes, longer than any configured window
+        windows.entrySet().removeIf(entry ->
+                now - entry.getValue().windowStart > maxWindowMs);
     }
 
     private static class WindowState {

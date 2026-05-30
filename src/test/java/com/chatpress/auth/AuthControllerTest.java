@@ -172,7 +172,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void accessApiWithExpiredTokenReturnsRedirect() throws Exception {
+    void accessApiWithExpiredTokenReturns401() throws Exception {
         String secret = "chatpress-v1-jwt-secret-key-2026-please-change-in-production";
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
 
@@ -187,11 +187,12 @@ class AuthControllerTest {
 
         mockMvc.perform(get("/api/artifacts")
                         .header("Authorization", "Bearer " + expiredToken))
-                .andExpect(status().isFound());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
     }
 
     @Test
-    void accessApiWithTamperedTokenReturnsRedirect() throws Exception {
+    void accessApiWithTamperedTokenReturns401() throws Exception {
         // Login to get a valid token, then tamper with it
         String loginBody = objectMapper.writeValueAsString(
                 new LoginRequest("admin", "admin123"));
@@ -208,6 +209,7 @@ class AuthControllerTest {
 
         mockMvc.perform(get("/api/artifacts")
                         .header("Authorization", "Bearer " + tamperedToken))
-                .andExpect(status().isFound());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
     }
 }

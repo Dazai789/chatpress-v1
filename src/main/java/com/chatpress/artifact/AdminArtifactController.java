@@ -8,19 +8,21 @@ import com.chatpress.artifact.renderer.AdminMarkdownImportRenderer;
 
 import com.chatpress.artifact.Artifact;
 import com.chatpress.artifact.ArtifactService;
+import com.chatpress.artifact.exception.ArtifactNotFoundException;
 import com.chatpress.artifact.exception.InvalidMarkdownImportException;
 import com.chatpress.common.AdminLogRenderer;
 import com.chatpress.common.OperationLog;
 import com.chatpress.common.OperationLogRepository;
+import com.chatpress.common.SecurityUtils;
 import com.chatpress.common.annotation.LogOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -87,36 +89,36 @@ public class AdminArtifactController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String status
     ) {
-        Page<Artifact> artifacts = artifactService.listArtifacts(page, size, q, status, currentUsername());
+        Page<Artifact> artifacts = artifactService.listArtifacts(page, size, q, status, SecurityUtils.currentUsername());
         return adminPageRenderer.render(artifacts, q, status);
     }
 
     @GetMapping(value = "/admin/artifacts/new", produces = MediaType.TEXT_HTML_VALUE)
     public String newArtifactForm(HttpServletRequest request) {
-        return adminFormRenderer.render("", "", null, csrfToken(request));
+        return adminFormRenderer.render("", "", null, SecurityUtils.csrfToken(request));
     }
 
     @GetMapping(value = "/admin/artifacts/import/markdown", produces = MediaType.TEXT_HTML_VALUE)
     public String importMarkdownForm(HttpServletRequest request) {
-        return adminMarkdownImportRenderer.render("", null, csrfToken(request));
+        return adminMarkdownImportRenderer.render("", null, SecurityUtils.csrfToken(request));
     }
 
     @GetMapping(value = "/admin/artifacts/{id}", produces = MediaType.TEXT_HTML_VALUE)
     public String getArtifact(@PathVariable Long id) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
+        Artifact artifact = artifactService.getArtifactOrThrow(id, SecurityUtils.currentUsername());
         return adminDetailRenderer.render(artifact);
     }
 
     @GetMapping(value = "/admin/artifacts/{id}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public String editArtifactForm(@PathVariable Long id, HttpServletRequest request) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
-        return adminFormRenderer.renderEdit(artifact, null, csrfToken(request));
+        Artifact artifact = artifactService.getArtifactOrThrow(id, SecurityUtils.currentUsername());
+        return adminFormRenderer.renderEdit(artifact, null, SecurityUtils.csrfToken(request));
     }
 
     @GetMapping(value = "/admin/artifacts/{id}/delete", produces = MediaType.TEXT_HTML_VALUE)
     public String deleteArtifactForm(@PathVariable Long id, HttpServletRequest request) {
-        Artifact artifact = artifactService.getArtifactOrThrow(id, currentUsername());
-        return adminDeleteRenderer.render(artifact, csrfToken(request));
+        Artifact artifact = artifactService.getArtifactOrThrow(id, SecurityUtils.currentUsername());
+        return adminDeleteRenderer.render(artifact, SecurityUtils.csrfToken(request));
     }
 
     @LogOperation("CREATE_ARTIFACT")
@@ -136,11 +138,11 @@ public class AdminArtifactController {
                             title,
                             sourceContent,
                             "Title and Markdown are required",
-                            csrfToken(request)
+                            SecurityUtils.csrfToken(request)
                     ));
         }
 
-        artifactService.createArtifact(title.trim(), sourceContent, currentUsername());
+        artifactService.createArtifact(title.trim(), sourceContent, SecurityUtils.currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
@@ -158,13 +160,13 @@ public class AdminArtifactController {
             HttpServletRequest request
     ) {
         try {
-            Artifact artifact = artifactService.importMarkdownFile(file, title, currentUsername());
+            Artifact artifact = artifactService.importMarkdownFile(file, title, SecurityUtils.currentUsername());
             return ResponseEntity.status(303)
                     .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts/" + artifact.getId()).toString())
                     .build();
         } catch (InvalidMarkdownImportException exception) {
             return ResponseEntity.badRequest()
-                    .body(adminMarkdownImportRenderer.render(title, exception.getMessage(), csrfToken(request)));
+                    .body(adminMarkdownImportRenderer.render(title, exception.getMessage(), SecurityUtils.csrfToken(request)));
         }
     }
 
@@ -189,7 +191,7 @@ public class AdminArtifactController {
                             sourceContent,
                             status,
                             "Title and Markdown are required",
-                            csrfToken(request)
+                            SecurityUtils.csrfToken(request)
                     ));
         }
 
@@ -202,11 +204,11 @@ public class AdminArtifactController {
                             sourceContent,
                             status,
                             "Status must be draft or published",
-                            csrfToken(request)
+                            SecurityUtils.csrfToken(request)
                     ));
         }
 
-        artifactService.updateArtifactWithStatusOrThrow(id, title.trim(), sourceContent, artifactStatus, currentUsername());
+        artifactService.updateArtifactWithStatusOrThrow(id, title.trim(), sourceContent, artifactStatus, SecurityUtils.currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts/" + id).toString())
                 .build();
@@ -218,22 +220,43 @@ public class AdminArtifactController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
     )
     public ResponseEntity<Void> deleteArtifact(@PathVariable Long id) {
-        artifactService.deleteArtifactOrThrow(id, currentUsername());
+        artifactService.deleteArtifactOrThrow(id, SecurityUtils.currentUsername());
         return ResponseEntity.status(303)
                 .header(HttpHeaders.LOCATION, URI.create("/admin/artifacts").toString())
                 .build();
     }
 
-    private String csrfToken(HttpServletRequest request) {
-        CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
-        return token != null ? token.getToken() : "";
-    }
-
-    private String currentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
-
     private Artifact.Status parseStatus(String status) {
         return Artifact.Status.fromString(status).orElse(null);
+    }
+
+    @ExceptionHandler(ArtifactNotFoundException.class)
+    public ResponseEntity<String> handleArtifactNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.TEXT_HTML)
+                .body("""
+                        <!doctype html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <title>Not Found - Admin</title>
+                            <style>
+                                body {
+                                    margin: 0; padding: 56px 20px;
+                                    background: #f5f5f2; color: #242424;
+                                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                                    text-align: center;
+                                }
+                                a { color: #0f766e; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>404</h1>
+                            <p>Artifact not found.</p>
+                            <p><a href="/admin/artifacts">Back to list</a></p>
+                        </body>
+                        </html>
+                        """);
     }
 }

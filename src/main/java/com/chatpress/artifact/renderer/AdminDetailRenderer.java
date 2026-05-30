@@ -2,6 +2,7 @@ package com.chatpress.artifact.renderer;
 
 import com.chatpress.artifact.Artifact;
 
+import com.chatpress.common.HtmlUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
@@ -234,17 +235,17 @@ public class AdminDetailRenderer {
                 </body>
                 </html>
                 """.formatted(
-                escapeHtml(artifact.getTitle()),
-                escapeHtml(artifact.getTitle()),
+                HtmlUtils.escapeHtml(artifact.getTitle()),
+                HtmlUtils.escapeHtml(artifact.getTitle()),
                 artifact.getId(),
                 artifact.getId(),
-                escapeHtml(status),
-                escapeHtml(status),
-                escapeHtml(artifact.getSlug()),
+                HtmlUtils.escapeHtml(status),
+                HtmlUtils.escapeHtml(status),
+                HtmlUtils.escapeHtml(artifact.getSlug()),
                 publicLink(artifact),
                 artifact.getCreatedAt().format(DATE_TIME_FORMATTER),
                 artifact.getUpdatedAt().format(DATE_TIME_FORMATTER),
-                escapeHtml(artifact.getSourceContent()),
+                HtmlUtils.escapeHtml(artifact.getSourceContent()),
                 artifact.getRenderedHtml()
         );
     }
@@ -254,17 +255,8 @@ public class AdminDetailRenderer {
             return "Draft";
         }
         return "<a href=\"/p/%s\">/p/%s</a>".formatted(
-                escapeHtml(artifact.getSlug()),
-                escapeHtml(artifact.getSlug())
+                HtmlUtils.escapeHtml(artifact.getSlug()),
+                HtmlUtils.escapeHtml(artifact.getSlug())
         );
-    }
-
-    private String escapeHtml(String value) {
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 }

@@ -1,5 +1,6 @@
 package com.chatpress.artifact.renderer;
 
+import com.chatpress.common.HtmlUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -146,8 +147,8 @@ public class AdminMarkdownImportRenderer {
                 </html>
                 """.formatted(
                 renderError(errorMessage),
-                escapeHtml(csrfToken),
-                escapeHtml(title)
+                HtmlUtils.escapeHtml(csrfToken),
+                HtmlUtils.escapeHtml(title)
         );
     }
 
@@ -155,18 +156,6 @@ public class AdminMarkdownImportRenderer {
         if (errorMessage == null || errorMessage.isBlank()) {
             return "";
         }
-        return "<p class=\"error\">%s</p>".formatted(escapeHtml(errorMessage));
-    }
-
-    private String escapeHtml(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
+        return "<p class=\"error\">%s</p>".formatted(HtmlUtils.escapeHtml(errorMessage));
     }
 }

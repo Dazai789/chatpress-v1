@@ -9,6 +9,7 @@ public record ArtifactRequest(
         String title,
 
         @NotBlank
+        @Size(max = 1_048_576)
         String sourceContent
 ) {
 }

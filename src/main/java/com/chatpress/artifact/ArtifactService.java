@@ -138,13 +138,29 @@ public class ArtifactService {
 
     private String generateSlug(String title) {
         String baseSlug = slugifyTitle(title);
-        String candidateSlug = baseSlug;
-        int suffix = 2;
-        while (artifactRepository.findBySlug(candidateSlug).isPresent()) {
-            candidateSlug = baseSlug + "-" + suffix;
-            suffix++;
+
+        // Single query to find all existing slugs with the same base prefix
+        var existingSlugs = artifactRepository.findSlugsByPrefix(baseSlug);
+
+        if (!existingSlugs.contains(baseSlug)) {
+            return baseSlug;
         }
-        return candidateSlug;
+
+        // Find the highest existing suffix and add 1
+        int maxSuffix = 1;
+        String prefix = baseSlug + "-";
+        for (String slug : existingSlugs) {
+            if (slug.startsWith(prefix)) {
+                try {
+                    int num = Integer.parseInt(slug.substring(prefix.length()));
+                    if (num > maxSuffix) {
+                        maxSuffix = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return baseSlug + "-" + (maxSuffix + 1);
     }
 
     private String slugifyTitle(String title) {

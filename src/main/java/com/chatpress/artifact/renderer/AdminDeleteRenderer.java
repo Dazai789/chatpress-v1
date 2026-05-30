@@ -2,6 +2,7 @@ package com.chatpress.artifact.renderer;
 
 import com.chatpress.artifact.Artifact;
 
+import com.chatpress.common.HtmlUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -140,25 +141,13 @@ public class AdminDeleteRenderer {
                 </body>
                 </html>
                 """.formatted(
-                escapeHtml(artifact.getTitle()),
-                escapeHtml(artifact.getTitle()),
-                escapeHtml(status),
-                escapeHtml(artifact.getSlug()),
+                HtmlUtils.escapeHtml(artifact.getTitle()),
+                HtmlUtils.escapeHtml(artifact.getTitle()),
+                HtmlUtils.escapeHtml(status),
+                HtmlUtils.escapeHtml(artifact.getSlug()),
                 artifact.getId(),
-                escapeHtml(csrfToken),
+                HtmlUtils.escapeHtml(csrfToken),
                 artifact.getId()
         );
-    }
-
-    private String escapeHtml(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 }

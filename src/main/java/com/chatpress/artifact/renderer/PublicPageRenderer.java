@@ -1,6 +1,7 @@
 package com.chatpress.artifact.renderer;
 
 import com.chatpress.artifact.Artifact;
+import com.chatpress.common.HtmlUtils;
 
 import org.springframework.stereotype.Component;
 
@@ -162,15 +163,6 @@ public class PublicPageRenderer {
                     </main>
                 </body>
                 </html>
-                """.formatted(escapeHtml(artifact.getTitle()), artifact.getRenderedHtml());
-    }
-
-    private String escapeHtml(String value) {
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
+                """.formatted(HtmlUtils.escapeHtml(artifact.getTitle()), artifact.getRenderedHtml());
     }
 }

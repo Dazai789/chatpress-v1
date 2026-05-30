@@ -1,6 +1,7 @@
 package com.chatpress.artifact.renderer;
 
 import com.chatpress.artifact.Artifact;
+import com.chatpress.common.HtmlUtils;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -292,7 +293,7 @@ public class AdminPageRenderer {
                 </body>
                 </html>
                 """.formatted(
-                escapeHtml(searchValue),
+                HtmlUtils.escapeHtml(searchValue),
                 selected(statusValue.isBlank()),
                 selected("published".equals(statusValue)),
                 selected("draft".equals(statusValue)),
@@ -309,10 +310,10 @@ public class AdminPageRenderer {
         String status = artifact.getStatus().name().toLowerCase(Locale.ROOT);
         String titleLink = "<a href=\"/admin/artifacts/%d\">%s</a>".formatted(
                 artifact.getId(),
-                escapeHtml(artifact.getTitle())
+                HtmlUtils.escapeHtml(artifact.getTitle())
         );
         String publicLink = artifact.getStatus() == Artifact.Status.PUBLISHED
-                ? "<a href=\"/p/%s\">Open</a>".formatted(escapeHtml(artifact.getSlug()))
+                ? "<a href=\"/p/%s\">Open</a>".formatted(HtmlUtils.escapeHtml(artifact.getSlug()))
                 : "<span class=\"muted\">Draft</span>";
 
         return """
@@ -325,9 +326,9 @@ public class AdminPageRenderer {
                 </tr>
                 """.formatted(
                 titleLink,
-                escapeHtml(status),
-                escapeHtml(status),
-                escapeHtml(artifact.getSlug()),
+                HtmlUtils.escapeHtml(status),
+                HtmlUtils.escapeHtml(status),
+                HtmlUtils.escapeHtml(artifact.getSlug()),
                 artifact.getCreatedAt().format(DATE_TIME_FORMATTER),
                 publicLink
         );
@@ -379,12 +380,4 @@ public class AdminPageRenderer {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    private String escapeHtml(String value) {
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
-    }
 }

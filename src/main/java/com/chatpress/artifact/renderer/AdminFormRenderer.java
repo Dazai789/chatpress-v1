@@ -2,6 +2,7 @@ package com.chatpress.artifact.renderer;
 
 import com.chatpress.artifact.Artifact;
 
+import com.chatpress.common.HtmlUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -214,15 +215,15 @@ public class AdminFormRenderer {
                 </body>
                 </html>
                 """.formatted(
-                escapeHtml(pageTitle),
-                escapeHtml(pageHeading),
+                HtmlUtils.escapeHtml(pageTitle),
+                HtmlUtils.escapeHtml(pageHeading),
                 renderError(errorMessage),
-                escapeHtml(formAction),
-                escapeHtml(csrfToken),
-                escapeHtml(title),
-                escapeHtml(sourceContent),
+                HtmlUtils.escapeHtml(formAction),
+                HtmlUtils.escapeHtml(csrfToken),
+                HtmlUtils.escapeHtml(title),
+                HtmlUtils.escapeHtml(sourceContent),
                 renderStatusField(status, showStatus),
-                escapeHtml(cancelHref)
+                HtmlUtils.escapeHtml(cancelHref)
         );
     }
 
@@ -249,7 +250,7 @@ public class AdminFormRenderer {
         if (errorMessage == null || errorMessage.isBlank()) {
             return "";
         }
-        return "<p class=\"error\">%s</p>".formatted(escapeHtml(errorMessage));
+        return "<p class=\"error\">%s</p>".formatted(HtmlUtils.escapeHtml(errorMessage));
     }
 
     private String normalizeStatus(String status) {
@@ -261,17 +262,5 @@ public class AdminFormRenderer {
 
     private String selected(boolean selected) {
         return selected ? " selected" : "";
-    }
-
-    private String escapeHtml(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 }
