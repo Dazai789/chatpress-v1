@@ -34,12 +34,13 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 - **标签系统**（多对多，创建时自动复用/新建，按标签筛选）。
 - **全文搜索**（关键词同时匹配标题和正文）。
 - **公开页缓存**（Redis Cache-Aside，更新/删除时自动失效，测试环境内存缓存）。
+- **Swagger API 文档**（`/swagger` UI + `/api/docs` JSON）。
 - MockMvc 测试（81 个全部通过）。
 
 ## 欠缺能力
 
 - 异步和线程池。
-- Swagger / Docker / CI。
+- Docker / CI。
 - MySQL 实跑验证。
 
 ## 技术栈
