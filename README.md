@@ -16,32 +16,39 @@ chatpress-v1 是一个轻量级 Markdown 页面发布系统。它的核心目标
 ## 已完成能力
 
 - Artifact 创建、列表、详情、编辑、删除。
-- Markdown 文件导入和渲染，HTML 安全过滤。
+- Markdown 文件导入和渲染，HTML 安全过滤（XSS 防护）。
 - slug 自动生成和唯一性处理。
 - draft / published 状态控制。
 - `/p/{slug}` 公开页面。
-- 后台列表、新建、详情、编辑、删除确认和导入页面。
+- 后台列表、新建、详情、编辑、删除确认、导入页面和操作日志页。
 - User 表、BCrypt 密码加密。
-- 注册 / 登录 API。
-- JWT 认证（Bearer token + 表单登录并存）。
+- 注册 / 登录 API + JWT 认证（Bearer token + 表单登录并存）。
 - 用户数据隔离（按 created_by 过滤，越权返回 404）。
-- H2 file 数据库、H2 test 数据库和 Flyway 迁移。
-- MySQL profile 预留。
-- 统一错误响应和 MockMvc 测试（64 个全部通过）。
+- H2 file 数据库、H2 test 数据库和 Flyway 迁移（V1-V5）。
+- MySQL profile 预留 + 复合索引（V4）。
+- 统一错误响应（12+ 种异常类型）。
+- AOP 操作日志（创建/编辑/删除/导入自动记录，`/admin/logs` 可查看）。
+- 限流保护（登录/注册 + artifact 写 API）。
+- CSRF 保护 + Session 过期友好提示。
+- 事务管理（编辑表单原子更新）+ 竞态条件兜底（409 DATA_CONFLICT）。
+- MockMvc 测试（77 个全部通过）。
 
 ## 欠缺能力
 
-- MySQL 实跑和索引验证。
-- Redis、AOP、限流、异步、Docker、CI。
+- Redis 公开页缓存。
+- 异步和线程池。
+- 文章封面图上传。
+- Swagger / Docker / CI。
+- MySQL 实跑验证。
 
 ## 技术栈
 
 - Java 21 / Spring Boot 3.5.14 / Maven
-- Spring MVC / Spring Data JPA / Spring Security
+- Spring MVC / Spring Data JPA / Spring Security / Spring AOP
 - H2（默认）/ MySQL profile
 - Flyway / Bean Validation
 - CommonMark 及扩展（表格、任务列表、删除线、自动链接）
-- Jsoup（HTML 安全过滤）
+- Jsoup（HTML 安全过滤，协议白名单）
 - JWT（jjwt 0.12.6）/ BCrypt
 - JUnit 5 / MockMvc
 
@@ -59,8 +66,11 @@ MYSQL_PASSWORD=...
 ```text
 GET  /p/{slug}
 GET  /admin/artifacts
+GET  /admin/logs
 POST /api/artifacts
 POST /api/artifacts/import/markdown
+POST /api/auth/login
+POST /api/auth/register
 ```
 
 完整接口见 API 参考。
@@ -72,15 +82,15 @@ POST /api/artifacts/import/markdown
 ## 项目结构
 
 ```text
-src/main/java/com/chatpress/v1/
-  artifact/
-  auth/
-  user/
-  security/
-  common/
-  config/
-  system/
+src/main/java/com/chatpress/
+  artifact/          — 核心域（实体、服务、DTO、渲染器、Controller）
+  auth/              — 认证（User、登录/注册、JWT）
+  security/          — Spring Security 配置、JWT 过滤器
+  common/            — 全局异常处理、AOP 切面、限流器
 src/main/resources/
-  db/migration/
-src/test/java/com/chatpress/v1/
+  db/migration/      — Flyway 迁移脚本 (V1-V5)
+src/test/java/com/chatpress/
+  artifact/          — Artifact 相关测试
+  auth/              — 认证测试
+  common/            — 限流器测试
 ```
