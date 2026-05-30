@@ -32,15 +32,18 @@ public class ArtifactService {
     private final TagRepository tagRepository;
     private final MarkdownRenderer markdownRenderer;
     private final PublicPageCache publicPageCache;
+    private final AsyncTaskService asyncTaskService;
 
     public ArtifactService(ArtifactRepository artifactRepository,
                            TagRepository tagRepository,
                            MarkdownRenderer markdownRenderer,
-                           PublicPageCache publicPageCache) {
+                           PublicPageCache publicPageCache,
+                           AsyncTaskService asyncTaskService) {
         this.artifactRepository = artifactRepository;
         this.tagRepository = tagRepository;
         this.markdownRenderer = markdownRenderer;
         this.publicPageCache = publicPageCache;
+        this.asyncTaskService = asyncTaskService;
     }
 
     @Transactional
@@ -50,7 +53,9 @@ public class ArtifactService {
         Artifact artifact = new Artifact(title, finalSlug, sourceContent, markdownRenderer.render(sourceContent), username);
         artifact.setStatus(Artifact.Status.PUBLISHED);
         artifact.setTags(resolveTags(tagNames));
-        return artifactRepository.save(artifact);
+        Artifact saved = artifactRepository.save(artifact);
+        asyncTaskService.afterPublish(saved.getSlug(), saved.getTitle(), saved.getSourceContent());
+        return saved;
     }
 
     @Transactional
