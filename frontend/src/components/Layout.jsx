@@ -19,6 +19,7 @@ export default function Layout() {
         <nav style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
           <Link to="/artifacts" style={linkStyle}>Articles</Link>
           <Link to="/artifacts/new" style={linkStyle}>New</Link>
+          <Link to="/artifacts/import" style={linkStyle}>Import</Link>
           <Link to="/logs" style={linkStyle}>Logs</Link>
         </nav>
         <div>

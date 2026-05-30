@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import List from './pages/List';
 import Form from './pages/Form';
 import Detail from './pages/Detail';
+import Import from './pages/Import';
 import Logs from './pages/Logs';
 import Layout from './components/Layout';
 
@@ -19,6 +20,7 @@ function App() {
           <Route index element={<Navigate to="/artifacts" />} />
           <Route path="artifacts" element={<List />} />
           <Route path="artifacts/new" element={<Form />} />
+          <Route path="artifacts/import" element={<Import />} />
           <Route path="artifacts/:id" element={<Detail />} />
           <Route path="artifacts/:id/edit" element={<Form />} />
           <Route path="logs" element={<Logs />} />

@@ -166,9 +166,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void accessApiWithoutTokenReturnsRedirect() throws Exception {
+    void accessApiWithoutTokenReturnsForbidden() throws Exception {
         mockMvc.perform(get("/api/artifacts"))
-                .andExpect(status().isFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
